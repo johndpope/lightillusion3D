@@ -4,15 +4,19 @@
 #include <vector>
 
 #include"Shader.h"
-#pragma warning (disable:4996)
 
 //Only for triangles
 class Model {
 public:
 	std::vector<Eigen::Vector3f> v_p;  //頂点座標
+	std::vector<Eigen::Vector3f> v_pp;  //頂点座標
 	std::vector<Eigen::Vector3f> v_n;  //頂点法線
+	std::vector<Eigen::Vector3f> v_nn;  //頂点法線
 	std::vector<Eigen::Vector2f> v_t;  //頂点tex座標
+	std::vector<Eigen::Vector2f> v_tt;  //頂点tex座標
 	std::vector<unsigned int> f_i;  //面頂点座標インデックス
+	std::vector<unsigned int> f_n;
+	std::vector<unsigned int> f_t;
 	
 
 
@@ -42,7 +46,7 @@ public:
 			while ((fgets(str, 1024, fp)) != NULL) {
 				if (str[0] == 'v' && str[1] == ' ') {
 					sscanf(str, "v %f %f %f\n", &tmpf[0], &tmpf[1], &tmpf[2]);
-					v_p.push_back(Eigen::Vector3f(tmpf[0]/10.0, tmpf[1]/10.0, tmpf[2]/10.0));
+					v_p.push_back(Eigen::Vector3f(tmpf[0], tmpf[1], tmpf[2]));
 				}
 				else if (str[0] == 'v' && str[1] == 'n') {
 					sscanf(str, "vn %f %f %f\n", &tmpf[0], &tmpf[1], &tmpf[2]);
@@ -53,12 +57,26 @@ public:
 					v_t.push_back(Eigen::Vector2f(tmpf[0], tmpf[1]));
 				}
 				else if (str[0] == 'f' && str[1] == ' ') {
-					sscanf(str, "f %d %d %d\n", &tmpi[0], &tmpi[1], &tmpi[2]);
-					f_i.push_back(tmpi[0]);
-					f_i.push_back(tmpi[1]);
-					f_i.push_back(tmpi[2]);
+					unsigned int vertexIndex[3], uvIndex[3], normalIndex[3];
+					sscanf(str, "f %d/%d/%d %d/%d/%d %d/%d/%d\n", &vertexIndex[0], &uvIndex[0], &normalIndex[0], &vertexIndex[1], &uvIndex[1], &normalIndex[1], &vertexIndex[2], &uvIndex[2], &normalIndex[2]);
+					f_i.push_back(vertexIndex[0]-1);
+					f_i.push_back(vertexIndex[1]-1);
+					f_i.push_back(vertexIndex[2]-1);
+					f_n.push_back(normalIndex[0] - 1);
+					f_n.push_back(normalIndex[1] - 1);
+					f_n.push_back(normalIndex[2] - 1);
+					f_t.push_back(uvIndex[0] - 1);
+					f_t.push_back(uvIndex[1] - 1);
+					f_t.push_back(uvIndex[2] - 1);
+
 				}
 			}
+			for(int i=0;i<f_n.size();i++){
+				v_nn.push_back(v_n[f_n[i]]);
+				v_pp.push_back(v_p[f_i[i]]);
+				v_tt.push_back(v_t[f_t[i]]);
+			}
+
 		}
 		else {
 			v_p.push_back(Eigen::Vector3f(-1.0, -1.0, 0.0));
@@ -145,7 +163,7 @@ public:
 			modelFlag = true;
 		}
 		shader.Load("Shader/simple.vert", "Shader/uvmap.frag");
-		shader.SetActive();
+		//shader.SetActive();
 	}
 
 	void setup() {
@@ -187,9 +205,10 @@ public:
 		
 
 		glEnable(GL_DEPTH_TEST);
-		glDisable(GL_LIGHTING);
+		
+		
 		//glEnable(GL_LIGHT0);
-		glEnable(GL_TEXTURE_2D);
+		//glEnable(GL_TEXTURE_2D);
 
 		//Projection
 		glMatrixMode(GL_PROJECTION);
@@ -198,14 +217,16 @@ public:
 		glOrtho(-view_fov * render_aspect, view_fov * render_aspect, -view_fov, view_fov, 0.1f, 10.0f);
 		//glFrustum(-view_fov * render_aspect, view_fov * render_aspect, -view_fov, view_fov, 0.1f, 10.0f);
 		//gluPerspective(22.4, render_aspect, 0.1f, 10.0f);
-		glTranslated(0.0, 0.0, -1.0f);
+		
+		glTranslated(0.0, 0.0, -1.0);
+		glScalef(0.1f, 0.1f, 0.1f);
 
 		//ModelView
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
 
 		//Lighting
-		/*
+		
 		GLfloat l4Position[] = { 0.0f, 0.0f, 5.0f, 0.0 };
 		glLightfv(GL_LIGHT0, GL_POSITION, l4Position);
 
@@ -219,7 +240,8 @@ public:
 		glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, f4Diffuse);
 		glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, f4Specular);
 		glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, fShininess);
-		*/
+		glEnable(GL_LIGHTING);
+		glEnable(GL_LIGHT0);
 
 		const GLubyte* renderer = glGetString(GL_RENDERER);
 		const GLubyte* glslVersion = glGetString(GL_SHADING_LANGUAGE_VERSION);
@@ -236,18 +258,18 @@ public:
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 			//Rendering
-			glVertexPointer(3, GL_FLOAT, 0, (GLfloat*)&(model.v_p[0][0]));
+			glVertexPointer(3, GL_FLOAT, 0, (GLfloat*)&(model.v_pp[0][0]));
 			glEnableClientState(GL_VERTEX_ARRAY);
 
-			glNormalPointer(GL_FLOAT, 0, (GLfloat*) & (model.v_n[0][0]));
+			glNormalPointer(GL_FLOAT, 0, (GLfloat*) & (model.v_nn[0][0]));
 			glEnableClientState(GL_NORMAL_ARRAY);
 
-			glTexCoordPointer(2, GL_FLOAT, 0, (GLfloat*) & (model.v_t[0][0]));
+			glTexCoordPointer(2, GL_FLOAT, 0, (GLfloat*) & (model.v_tt[0][0]));
 			glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 
 
 			//glBindTexture(GL_TEXTURE_2D, tex);
-			glDrawElements(GL_QUADS, model.f_i.size(), GL_UNSIGNED_INT, &model.f_i[0]);
+			glDrawArrays(GL_TRIANGLES, 0,model.v_pp.size());
 		}
 		else {
 			//Initialize
