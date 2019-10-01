@@ -15,7 +15,7 @@ public:
 	~VertexArray();
 
 	void SetActive();
-	void load(std::vector<float> verts, unsigned int numVerts);
+	void load(float* verts, unsigned int numVerts);
 	unsigned int GetNumIndices() const { return mNumIndices; }
 	unsigned int GetNumVerts() const { return mNumVerts; }
 private:

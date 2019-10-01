@@ -49,7 +49,7 @@ public:
 			while ((fgets(str, 1024, fp)) != NULL) {
 				if (str[0] == 'v' && str[1] == ' ') {
 					sscanf(str, "v %f %f %f\n", &tmpf[0], &tmpf[1], &tmpf[2]);
-					v_p.push_back(Eigen::Vector3f(tmpf[0], tmpf[1], tmpf[2]));
+					v_p.push_back(Eigen::Vector3f(tmpf[0]/10.0f, tmpf[1]/10.0f, tmpf[2]/10.0f));
 				}
 				else if (str[0] == 'v' && str[1] == 'n') {
 					sscanf(str, "vn %f %f %f\n", &tmpf[0], &tmpf[1], &tmpf[2]);
@@ -175,7 +175,8 @@ public:
 		if (fileName != NULL) {
 			modelFlag = true;
 		}
-		vertexArray.load(model.varray, model.varray.size() / 8);
+		vertexArray.load(model.varray.data(), static_cast<unsigned>(model.varray.size())/8);
+		vertexArray.SetActive();
 		shader.Load("Shader/simple.vert", "Shader/uvmap.frag");
 		shader.SetActive();
 	}
@@ -220,7 +221,7 @@ public:
 
 		glEnable(GL_DEPTH_TEST);
 		//glEnable(GL_CULL_FACE);
-		glDisable(GL_CULL_FACE);
+		//glDisable(GL_CULL_FACE);
 		
 		//glEnable(GL_LIGHT0);
 		//glEnable(GL_TEXTURE_2D);
@@ -258,10 +259,10 @@ public:
 		glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, f4Diffuse);
 		glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, f4Specular);
 		glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, fShininess);
-		*/
+		
 		glEnable(GL_LIGHTING);
 		glEnable(GL_LIGHT0);
-		
+		*/
 		const GLubyte* renderer = glGetString(GL_RENDERER);
 		const GLubyte* glslVersion = glGetString(GL_SHADING_LANGUAGE_VERSION);
 		printf("GL Renderer  :%s\n", renderer);
@@ -272,14 +273,14 @@ public:
 	inline void render(float* input_xyz, cv::Mat* img = NULL, int texid = 0) {
 
 		if (modelFlag) {
-
+			//cout << "Y" << endl;
 			glClearColor(0, 0.0, 0, 0);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 			//Rendering
 			vertexArray.SetActive();
 			//glDrawElements(GL_TRIANGLES, model.varray.size()/8, GL_UNSIGNED_INT, nullptr);
-			glDrawArrays(GL_TRIANGLES, 0, model.v_pp.size());
+			glDrawArrays(GL_TRIANGLES, 0, model.varray.size()/8);
 		}
 		else {
 			//Initialize

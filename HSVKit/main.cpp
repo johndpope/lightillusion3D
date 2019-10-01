@@ -14,8 +14,8 @@ int main() {
 	glfwkit.setup();
 	float corner_gl[12] = { 0, };
 	int key;
-	while ((key=cv::waitKey(1))!='q') {
-		glfwkit.update(corner_gl);
+	while (glfwkit.update(corner_gl)) {
+		
 	}
 	
 	//cv::waitKey(0);

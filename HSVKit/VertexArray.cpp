@@ -20,14 +20,14 @@ VertexArray::VertexArray()
 	
 }
 
-void VertexArray::load(std::vector<float> verts, unsigned int numVerts) {
+void VertexArray::load(float* verts, unsigned int numVerts) {
 	glGenVertexArrays(1, &mVertexArray);
 	glBindVertexArray(mVertexArray);
 
 	// Create vertex buffer
 	glGenBuffers(1, &mVertexBuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, mVertexBuffer);
-	glBufferData(GL_ARRAY_BUFFER, numVerts * 8 *sizeof(float), &verts[0], GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, numVerts * 8 *sizeof(float), verts, GL_STATIC_DRAW);
 
 
 
