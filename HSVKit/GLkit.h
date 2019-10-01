@@ -49,7 +49,7 @@ public:
 			while ((fgets(str, 1024, fp)) != NULL) {
 				if (str[0] == 'v' && str[1] == ' ') {
 					sscanf(str, "v %f %f %f\n", &tmpf[0], &tmpf[1], &tmpf[2]);
-					v_p.push_back(Eigen::Vector3f(tmpf[0]/10.0f, tmpf[1]/10.0f, tmpf[2]/10.0f));
+					v_p.push_back(Eigen::Vector3f(-tmpf[0], tmpf[1], tmpf[2]));
 				}
 				else if (str[0] == 'v' && str[1] == 'n') {
 					sscanf(str, "vn %f %f %f\n", &tmpf[0], &tmpf[1], &tmpf[2]);
@@ -134,6 +134,7 @@ public:
 };
 
 class GLkit {
+public:
 	//Projection
 	int render_size[2];
 	float render_aspect;

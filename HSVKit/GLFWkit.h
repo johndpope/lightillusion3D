@@ -4,7 +4,7 @@
 #include "GLkit.h"
 
 class GLFWkit {
-private:
+public:
     //Window
     GLFWwindow* window;
     int window_size[2];
@@ -37,6 +37,9 @@ public:
             printf("GLFW was NOT initialized.");
             return;
         }
+		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
         window = glfwCreateWindow(window_size[0], window_size[1], title, nullptr, nullptr);
         if (!window) {
@@ -70,12 +73,14 @@ public:
 		glkit.loadObj(fileName);
     }
 
-    inline void render(float *input_xyz, cv::Mat *img = NULL, int texid = 0) {
+    void render(float *input_xyz, cv::Mat *img = NULL, int texid = 0) {
         glkit.render(input_xyz, img, texid);
     }
-	inline void render(float* input_xyz, cv::Mat* img, cv::Mat renderimg) {
+	/*
+	void render(float* input_xyz, cv::Mat* img, cv::Mat renderimg) {
 		glkit.render(input_xyz, img, renderimg);
 	}
+	*/
 
     bool update(float *input_xyz, cv::Mat *img = NULL) {
         if (glfwWindowShouldClose(window)) {

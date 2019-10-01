@@ -10,10 +10,20 @@
 //#include"exparimentLena.h"
 int main() {
 	//mainloop();
-	GLFWkit glfwkit("glfwkit", 1024, 768,"horse.obj");
+	GLFWkit glfwkit("glfwkit", 1024, 1024,"horse.obj");
 	glfwkit.setup();
 	float corner_gl[12] = { 0, };
 	int key;
+	float v;
+	vector<float> varray = glfwkit.glkit.model.varray;
+	/*
+	for (int i = 0; i < varray.size() / 8; i++) {
+		
+			cout << varray[i * 8 + 5] << " ";
+		
+		cout << endl;
+	}
+	*/
 	while (glfwkit.update(corner_gl)) {
 		
 	}
