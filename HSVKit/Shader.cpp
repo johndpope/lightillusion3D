@@ -10,7 +10,6 @@
 
 #include <fstream>
 #include <sstream>
-//#include"common.h"
 
 Shader::Shader()
 	: mShaderProgram(0)
@@ -90,10 +89,6 @@ void Shader::SetFloatUniform(const char* name, float value)
 	glUniform1f(loc, value);
 }
 
-void Shader::SetTextureUniform(const char* name, GLint value) {
-	glUniform1i(glGetUniformLocation(mShaderProgram, name), value);
-}
-
 bool Shader::CompileShader(const std::string& fileName,
 	GLenum shaderType,
 	GLuint& outShader)
@@ -114,7 +109,11 @@ bool Shader::CompileShader(const std::string& fileName,
 		glShaderSource(outShader, 1, &(contentsChar), nullptr);
 		glCompileShader(outShader);
 
-		
+		if (!IsCompiled(outShader))
+		{
+			printf("Failed to compile shader %s", fileName.c_str());
+			return false;
+		}
 	}
 	else
 	{
@@ -127,7 +126,18 @@ bool Shader::CompileShader(const std::string& fileName,
 
 bool Shader::IsCompiled(GLuint shader)
 {
-	
+	GLint status;
+	// Query the compile status
+	glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
+
+	if (status != GL_TRUE)
+	{
+		char buffer[512];
+		memset(buffer, 0, 512);
+		glGetShaderInfoLog(shader, 511, nullptr, buffer);
+		printf("GLSL Compile Failed:\n%s", buffer);
+		return false;
+	}
 
 	return true;
 }
@@ -135,7 +145,17 @@ bool Shader::IsCompiled(GLuint shader)
 bool Shader::IsValidProgram()
 {
 
-
+	GLint status;
+	// Query the link status
+	glGetProgramiv(mShaderProgram, GL_LINK_STATUS, &status);
+	if (status != GL_TRUE)
+	{
+		char buffer[512];
+		memset(buffer, 0, 512);
+		glGetProgramInfoLog(mShaderProgram, 511, nullptr, buffer);
+		printf("GLSL Link Status:\n%s", buffer);
+		return false;
+	}
 
 	return true;
 }

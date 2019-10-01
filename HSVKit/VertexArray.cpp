@@ -20,14 +20,14 @@ VertexArray::VertexArray()
 	
 }
 
-void VertexArray::load(const std::vector<float> verts, unsigned int numVerts) {
+void VertexArray::load(std::vector<float> verts, unsigned int numVerts) {
 	glGenVertexArrays(1, &mVertexArray);
 	glBindVertexArray(mVertexArray);
 
 	// Create vertex buffer
 	glGenBuffers(1, &mVertexBuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, mVertexBuffer);
-	glBufferData(GL_ARRAY_BUFFER, numVerts * 8 * sizeof(float), &verts[0], GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, numVerts * 8 *sizeof(float), &verts[0], GL_STATIC_DRAW);
 
 
 
@@ -42,7 +42,7 @@ void VertexArray::load(const std::vector<float> verts, unsigned int numVerts) {
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), 0);
 	// Normal is 3 floats
 	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float),
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_TRUE, 8 * sizeof(float),
 		reinterpret_cast<void*>(sizeof(float) * 3));
 	// Texture coordinates is 2 floats
 	glEnableVertexAttribArray(2);

@@ -22,6 +22,9 @@
     <Filter Include="ソース ファイル\GG">
       <UniqueIdentifier>{4d612da4-4b78-4b52-996a-f61256bd5c81}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\Shader">
+      <UniqueIdentifier>{27e95dce-1080-4a05-9039-83e62d776a3e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -145,5 +148,13 @@
     <Text Include="memo.txt">
       <Filter>リソース ファイル</Filter>
     </Text>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Shader\simple.vert">
+      <Filter>ソース ファイル\Shader</Filter>
+    </None>
+    <None Include="Shader\uvmap.frag">
+      <Filter>ソース ファイル\Shader</Filter>
+    </None>
   </ItemGroup>
 </Project>

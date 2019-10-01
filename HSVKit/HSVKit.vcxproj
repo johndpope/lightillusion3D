@@ -172,6 +172,10 @@
   <ItemGroup>
     <Text Include="memo.txt" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Shader\simple.vert" />
+    <None Include="Shader\uvmap.frag" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

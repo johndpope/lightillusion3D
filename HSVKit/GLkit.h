@@ -89,7 +89,7 @@ public:
 				varray.push_back(v_t[f_t[i]][1]);
 			
 			}
-
+			
 		}
 		else {
 			v_p.push_back(Eigen::Vector3f(-1.0, -1.0, 0.0));
@@ -177,7 +177,7 @@ public:
 		}
 		vertexArray.load(model.varray, model.varray.size() / 8);
 		shader.Load("Shader/simple.vert", "Shader/uvmap.frag");
-		//shader.SetActive();
+		shader.SetActive();
 	}
 
 	void setup() {
@@ -219,7 +219,8 @@ public:
 		
 
 		glEnable(GL_DEPTH_TEST);
-		
+		//glEnable(GL_CULL_FACE);
+		glDisable(GL_CULL_FACE);
 		
 		//glEnable(GL_LIGHT0);
 		//glEnable(GL_TEXTURE_2D);
@@ -233,14 +234,17 @@ public:
 		//gluPerspective(22.4, render_aspect, 0.1f, 10.0f);
 		
 		glTranslated(0.0, 0.0, -1.0);
-		glScalef(0.1f, 0.1f, 0.1f);
+		//glScalef(0.1f, 0.1f, 0.1f);
   
 		//ModelView
 		glMatrixMode(GL_MODELVIEW);
+		
 		glLoadIdentity();
+		//glScalef(0.1f, 0.1f, 0.1f);
+		//glRotatef(180.0f, 0.0f, 1.0f, 0.0f);
 
 		//Lighting
-		
+		/*
 		GLfloat l4Position[] = { 0.0f, 0.0f, 5.0f, 0.0 };
 		glLightfv(GL_LIGHT0, GL_POSITION, l4Position);
 
@@ -254,9 +258,10 @@ public:
 		glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, f4Diffuse);
 		glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, f4Specular);
 		glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, fShininess);
+		*/
 		glEnable(GL_LIGHTING);
 		glEnable(GL_LIGHT0);
-
+		
 		const GLubyte* renderer = glGetString(GL_RENDERER);
 		const GLubyte* glslVersion = glGetString(GL_SHADING_LANGUAGE_VERSION);
 		printf("GL Renderer  :%s\n", renderer);
