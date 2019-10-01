@@ -140,6 +140,7 @@
     <ClCompile Include="Math.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="springSimulate.cpp" />
+    <ClCompile Include="VertexArray.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="calibration.h" />
@@ -166,6 +167,7 @@
     <ClInclude Include="resource.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="springSimulate.h" />
+    <ClInclude Include="VertexArray.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="memo.txt" />
