@@ -74,3 +74,5 @@
 #include"mouse.h"
 
 #include"springSimulate.h"
+
+#include"VertexArray.h"

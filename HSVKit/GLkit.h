@@ -4,6 +4,7 @@
 #include <vector>
 
 #include"Shader.h"
+#include"VertexArray.h"
 
 //Only for triangles
 class Model {
@@ -17,6 +18,8 @@ public:
 	std::vector<unsigned int> f_i;  //面頂点座標インデックス
 	std::vector<unsigned int> f_n;
 	std::vector<unsigned int> f_t;
+
+	std::vector<float> varray;
 	
 
 
@@ -75,6 +78,16 @@ public:
 				v_nn.push_back(v_n[f_n[i]]);
 				v_pp.push_back(v_p[f_i[i]]);
 				v_tt.push_back(v_t[f_t[i]]);
+
+				varray.push_back(v_p[f_i[i]][0]);
+				varray.push_back(v_p[f_i[i]][1]);
+				varray.push_back(v_p[f_i[i]][2]);
+				varray.push_back(v_n[f_n[i]][0]);
+				varray.push_back(v_n[f_n[i]][1]);
+				varray.push_back(v_n[f_n[i]][2]);
+				varray.push_back(v_t[f_t[i]][0]);
+				varray.push_back(v_t[f_t[i]][1]);
+			
 			}
 
 		}
@@ -136,7 +149,7 @@ class GLkit {
 	bool modelFlag = false;
 
 	Shader shader;
-
+	VertexArray vertexArray;
 public:
 	//Constructor
 	GLkit(int width, int height) :
@@ -162,6 +175,7 @@ public:
 		if (fileName != NULL) {
 			modelFlag = true;
 		}
+		vertexArray.load(model.varray, model.varray.size() / 8);
 		shader.Load("Shader/simple.vert", "Shader/uvmap.frag");
 		//shader.SetActive();
 	}
@@ -220,7 +234,7 @@ public:
 		
 		glTranslated(0.0, 0.0, -1.0);
 		glScalef(0.1f, 0.1f, 0.1f);
-
+  
 		//ModelView
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
@@ -258,18 +272,9 @@ public:
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 			//Rendering
-			glVertexPointer(3, GL_FLOAT, 0, (GLfloat*)&(model.v_pp[0][0]));
-			glEnableClientState(GL_VERTEX_ARRAY);
-
-			glNormalPointer(GL_FLOAT, 0, (GLfloat*) & (model.v_nn[0][0]));
-			glEnableClientState(GL_NORMAL_ARRAY);
-
-			glTexCoordPointer(2, GL_FLOAT, 0, (GLfloat*) & (model.v_tt[0][0]));
-			glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-
-
-			//glBindTexture(GL_TEXTURE_2D, tex);
-			glDrawArrays(GL_TRIANGLES, 0,model.v_pp.size());
+			vertexArray.SetActive();
+			//glDrawElements(GL_TRIANGLES, model.varray.size()/8, GL_UNSIGNED_INT, nullptr);
+			glDrawArrays(GL_TRIANGLES, 0, model.v_pp.size());
 		}
 		else {
 			//Initialize
