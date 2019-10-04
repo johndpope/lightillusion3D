@@ -137,7 +137,6 @@
     <ClCompile Include="EXT\SRC\Ximea\Ximea.cpp" />
     <ClCompile Include="HSVMC1.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="Math.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="springSimulate.cpp" />
     <ClCompile Include="VertexArray.cpp" />
@@ -159,7 +158,6 @@
     <ClInclude Include="HSVMC1.h" />
     <ClInclude Include="imageEvaluation.h" />
     <ClInclude Include="library.h" />
-    <ClInclude Include="Math.h" />
     <ClInclude Include="mixedRateEvaluation.h" />
     <ClInclude Include="mouse.h" />
     <ClInclude Include="multiImage.h" />

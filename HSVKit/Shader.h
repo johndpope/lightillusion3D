@@ -9,7 +9,7 @@
 #pragma once
 //#include <GL/glew.h>
 #include <string>
-#include "Math.h"
+
 //#include"common.h"
 #include <GLFW/gg.h>
 #include <GLFW/glfw3.h>
