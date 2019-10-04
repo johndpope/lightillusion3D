@@ -25,13 +25,15 @@ public:
 	// Set this as the active shader program
 	void SetActive();
 	// Sets a Matrix uniform
-	void SetMatrixUniform(const char* name, const glm::mat4& matrix);
+	void SetMatrixUniform(const char* name, const glm::mat4 matrix);
 	// Sets a Vector3 uniform
 	void SetVectorUniform(const char* name, const glm::vec3& vector);
 	// Sets a float uniform
 	void SetFloatUniform(const char* name, float value);
 
 	void SetTextureUniform(const char* name, GLint value);
+
+	void printProgram();
 private:
 	// Tries to compile the specified shader
 	bool CompileShader(const std::string& fileName,

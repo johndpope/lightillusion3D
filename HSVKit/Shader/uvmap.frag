@@ -7,7 +7,7 @@ layout (location = 0) out vec4 FragColor;
 in vec3 Position;
 in vec2 TexCoord;
 in vec3 Normal;
-vec3 light=vec3(5.0,5.0f,-5.0f);
+vec3 light=vec3(0.0f,0.0f,-5.0f);
 
 void main()
 {

@@ -10,7 +10,7 @@
 //#include"exparimentLena.h"
 int main() {
 	//mainloop();
-	GLFWkit glfwkit("glfwkit", 1024, 1024,"horse.obj");
+	GLFWkit glfwkit("glfwkit", 1024, 768,"horse.obj");
 	glfwkit.setup();
 	float corner_gl[12] = { 0, };
 	int key;

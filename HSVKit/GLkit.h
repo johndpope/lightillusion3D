@@ -7,7 +7,9 @@
 #include"VertexArray.h"
 
 #include<glm/glm.hpp>
-
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/string_cast.hpp>
 //Only for triangles
 class Model {
 public:
@@ -153,6 +155,8 @@ public:
 
 	Shader shader;
 	VertexArray vertexArray;
+	glm::mat4 projection;
+	glm::mat4 M;
 public:
 	//Constructor
 	GLkit(int width, int height) :
@@ -165,7 +169,8 @@ public:
 		view_rot(Eigen::Quaternion<GLfloat>::Identity())
 	{
 		//ModelView
-		
+		projection = glm::mat4(1.0);
+		M = glm::mat4(1.0);
 
 	}
 
@@ -180,8 +185,8 @@ public:
 		}
 		vertexArray.load(model.varray.data(), static_cast<unsigned>(model.varray.size())/8);
 		vertexArray.SetActive();
-		shader.Load("Shader/simple.vert", "Shader/uvmap.frag");
-		shader.SetActive();
+		
+		
 	}
 
 	void setup() {
@@ -213,7 +218,7 @@ public:
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		}
 		*/
-		
+		shader.Load("Shader/simple.vert", "Shader/uvmap.frag");
 		glBindTexture(GL_TEXTURE_2D, tex);
 		cv::Mat renderimg = cv::imread("purin.jpg",1);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, renderimg.cols, renderimg.rows, 0, GL_BGR, GL_UNSIGNED_BYTE, renderimg.data);
@@ -228,22 +233,28 @@ public:
 		
 		//glEnable(GL_LIGHT0);
 		//glEnable(GL_TEXTURE_2D);
-
+		projection = glm::ortho(-view_fov * render_aspect, view_fov * render_aspect, -view_fov, view_fov, 0.1f, 10.0f);
+		M = glm::translate(M, glm::vec3(0.0, 0.0, 1.0f));
+		shader.SetActive();
+		//shader.printProgram();
+		shader.SetMatrixUniform("MVP", projection*M );
+		//shader.SetFloatUniform("U", 0.0f);
+	
 		//Projection
-		glMatrixMode(GL_PROJECTION);
-		glLoadIdentity();
+		//glMatrixMode(GL_PROJECTION);
+		//glLoadIdentity();
 		glViewport(0, 0, render_size[0], render_size[1]);
-		glOrtho(-view_fov * render_aspect, view_fov * render_aspect, -view_fov, view_fov, 0.1f, 10.0f);
+		//glOrtho(-view_fov * render_aspect, view_fov * render_aspect, -view_fov, view_fov, 0.1f, 10.0f);
 		//glFrustum(-view_fov * render_aspect, view_fov * render_aspect, -view_fov, view_fov, 0.1f, 10.0f);
 		//gluPerspective(22.4, render_aspect, 0.1f, 10.0f);
 		
-		glTranslated(0.0, 0.0, -1.0);
+		//glTranslated(0.0, 0.0, -1.0);
 		//glScalef(0.1f, 0.1f, 0.1f);
   
 		//ModelView
-		glMatrixMode(GL_MODELVIEW);
+		//glMatrixMode(GL_MODELVIEW);
 		
-		glLoadIdentity();
+		//glLoadIdentity();
 		//glScalef(0.1f, 0.1f, 0.1f);
 		//glRotatef(180.0f, 0.0f, 1.0f, 0.0f);
 
@@ -279,7 +290,7 @@ public:
 			//cout << "Y" << endl;
 			glClearColor(0, 0.0, 0, 0);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+			
 			//Rendering
 			vertexArray.SetActive();
 			//glDrawElements(GL_TRIANGLES, model.varray.size()/8, GL_UNSIGNED_INT, nullptr);

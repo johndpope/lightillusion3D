@@ -10,6 +10,7 @@
 
 #include <fstream>
 #include <sstream>
+#include<iostream>
 
 Shader::Shader()
 	: mShaderProgram(0)
@@ -67,10 +68,12 @@ void Shader::SetActive()
 	glUseProgram(mShaderProgram);
 }
 
-void Shader::SetMatrixUniform(const char* name, const glm::mat4 &matrix)
+void Shader::SetMatrixUniform(const char* name, const glm::mat4 matrix)
 {
 	// Find the uniform by this name
-	GLuint loc = glGetUniformLocation(mShaderProgram, name);
+	GLuint loc = glGetUniformLocation(mShaderProgram, "MVP");
+	//std::cout <<(int) loc << std::endl;
+	//std::cout << loc << std::endl;
 	// Send the matrix data to the uniform
 	glUniformMatrix4fv(loc, 1, GL_TRUE, &matrix[0][0]);
 }
@@ -85,6 +88,7 @@ void Shader::SetVectorUniform(const char* name, const glm::vec3 &vector)
 void Shader::SetFloatUniform(const char* name, float value)
 {
 	GLuint loc = glGetUniformLocation(mShaderProgram, name);
+	
 	// Send the float data
 	glUniform1f(loc, value);
 }
@@ -158,4 +162,8 @@ bool Shader::IsValidProgram()
 	}
 
 	return true;
+}
+
+void Shader::printProgram() {
+	std::cout << (int)mShaderProgram <<std::endl;
 }
