@@ -13,7 +13,7 @@
 //#include"common.h"
 #include <GLFW/gg.h>
 #include <GLFW/glfw3.h>
-
+#include<glm/glm.hpp>
 class Shader
 {
 public:
@@ -25,9 +25,9 @@ public:
 	// Set this as the active shader program
 	void SetActive();
 	// Sets a Matrix uniform
-	void SetMatrixUniform(const char* name, const Matrix4& matrix);
+	void SetMatrixUniform(const char* name, const glm::mat4& matrix);
 	// Sets a Vector3 uniform
-	void SetVectorUniform(const char* name, const Vector3& vector);
+	void SetVectorUniform(const char* name, const glm::vec3& vector);
 	// Sets a float uniform
 	void SetFloatUniform(const char* name, float value);
 
