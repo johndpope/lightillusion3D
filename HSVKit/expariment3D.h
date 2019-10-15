@@ -4,6 +4,7 @@
 #include "GLFWkit.h"
 #include "GLkit.h"
 #include <thread>
+#include<glm/glm.hpp>
 //#include<iostream>
 
 
@@ -192,128 +193,6 @@ void getHomography(cv::Mat img, float* h, bool read = false) {
 	}
 }
 
-void correctHomography(float* h) {
-
-	vector<cv::Point> target;
-	target.push_back(cv::Point(0, 0));
-	target.push_back(cv::Point(299, 0));
-	target.push_back(cv::Point(0, 299));
-	target.push_back(cv::Point(299, 299));
-
-	cv::Size imSize = cv::Size(300, 300);
-
-	cv::Mat check1 = cv::imread("check0.png", 0);
-	cv::Mat check2 = cv::imread("check1.png", 0);
-
-
-	vector<cv::Point> source;
-	mouseParam mouse;
-	cv::namedWindow("Homography");
-	cv::setMouseCallback("Homography", mouseCallBack, &mouse);
-
-	cv::Mat displaysrc;
-	cv::cvtColor(img_ximea0_cam, displaysrc, cv::COLOR_GRAY2RGB);
-	cv::imshow("Homography", displaysrc);
-	for (int i = 0; i < 4; i++) {
-		mouse.event = NULL;
-		while (mouse.event != cv::EVENT_LBUTTONDOWN) {
-			cv::waitKey(1);
-		}
-		mouse.event = NULL;
-		int cx = mouse.x;
-		int cy = mouse.y;
-		source.push_back(cv::Point(cx, cy));
-
-		cv::circle(displaysrc, cv::Point(cx, cy), 10, cv::Scalar(200, 0, 0), 1);
-
-		cv::imshow("Homography", displaysrc);
-		cv::waitKey(33);
-	}
-	cv::destroyWindow("Homography");
-
-
-	cv::Mat homography0 = cv::findHomography(source, target);
-	cv::Mat lastHomography;
-	double maxscore = 0.0;
-	int windowSize = 2;
-	for (int x0 = -windowSize; x0 < windowSize; x0++) {
-		for (int y0 = -windowSize; y0 < windowSize; y0++) {
-			for (int x1 = -windowSize; x1 < windowSize; x1++) {
-				for (int y1 = -windowSize; y1 < windowSize; y1++) {
-					for (int x2 = -windowSize; x2 < windowSize; x2++) {
-						for (int y2 = -windowSize; y2 < windowSize; y2++) {
-							for (int x3 = -windowSize; x3 < windowSize; x3++) {
-								for (int y3 = -windowSize; y3 < windowSize; y3++) {
-									homography_proj[0][0] += x0;
-									homography_proj[0][1] += y0;
-									homography_proj[1][0] += x1;
-									homography_proj[1][1] += y1;
-									homography_proj[2][0] += x2;
-									homography_proj[2][1] += y2;
-									homography_proj[3][0] += x3;
-									homography_proj[3][1] += y3;
-									std::vector<cv::Point2f> src;
-									std::vector<cv::Point2f> dst;
-									for (int i = 0; i < 4; i++) {
-										src.push_back(cv::Point2f(homography_cam[i][0], homography_cam[i][1]));
-										dst.push_back(cv::Point2f(homography_proj[i][0], homography_proj[i][1]));
-									}
-
-									cv::Mat H = cv::findHomography(src, dst);
-									for (int i = 0; i < 3; i++) {
-										for (int j = 0; j < 3; j++) {
-											h[i * 3 + j] = H.at<double>(i, j);
-										}
-									}
-									cv::Mat d;
-									img_ximea0_cam.copyTo(d);
-									cv::warpPerspective(d, d, homography0, imSize);
-									cv::equalizeHist(d, d);
-									double score = Mrate(d, check1, check2);
-									if (score > maxscore) {
-										cout << score << endl;
-										maxscore = score;
-										H.copyTo(lastHomography);
-									}
-
-									homography_proj[0][0] -= x0;
-									homography_proj[0][1] -= y0;
-									homography_proj[1][0] -= x1;
-									homography_proj[1][1] -= y1;
-									homography_proj[2][0] -= x2;
-									homography_proj[2][1] -= y2;
-									homography_proj[3][0] -= x3;
-									homography_proj[3][1] -= y3;
-									int key = cv::waitKey(1);
-									if (key == 'e') {
-										goto Finish;
-									}
-
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-
-Finish:
-
-	for (int i = 0; i < 3; i++) {
-		for (int j = 0; j < 3; j++) {
-			h[i * 3 + j] = lastHomography.at<double>(i, j);
-		}
-	}
-
-
-	FILE* fp = fopen("Homography.txt", "w");
-	for (int i = 0; i < 9; i++) {
-		fprintf(fp, "%f\n", h[i]);
-	}
-
-}
-
 inline void cvtHomography(float* input, float* output, float* h) {
 	float p[3];
 	for (int i = 0; i < 4; i++) {
@@ -430,21 +309,15 @@ void getCorners(cv::Mat& img, cv::Mat& img_display, float* corners, bool* flags,
 	img_display_tmp.copyTo(img_display);
 }
 
-void OnVelocityAccelChanged(int param, void*) {
-	velocityAccel = (float)param / 100.0f;
-}
-void OnLowpassChanged(int param, void*) {
-	lowpassParam = (float)param / 100.0f;
-}
-void lowpassFilter(float* nowY, float* preY, float* x) {
-	for (int i = 0; i < 4; i++) {
-		nowY[3 * i + 0] = lowpassParam * preY[3 * i + 0] + (1.0f - lowpassParam) * x[3 * i + 0];
-		nowY[3 * i + 1] = lowpassParam * preY[3 * i + 1] + (1.0f - lowpassParam) * x[3 * i + 1];
-	}
-}
 
 
 inline void mainloop() {
+
+#pragma region Imread
+	
+
+#pragma endregion
+
 
 #pragma region DATA
 
@@ -479,60 +352,6 @@ inline void mainloop() {
 
 
 #pragma endregion
-
-
-#pragma region Ximea Open
-	Ximea ximeaCam0, ximeaCam1;
-	int ximea_cam_width = 648;
-	int ximea_cam_height = 488;
-
-	ximeaCam0.connect(0);
-
-	ximeaCam0.setParam(paramTypeCamera::paramInt::WIDTH, ximea_cam_width);
-	ximeaCam0.setParam(paramTypeCamera::paramInt::HEIGHT, ximea_cam_height);
-	ximeaCam0.setParam(paramTypeCamera::paramFloat::FPS, 100.0f);
-	ximeaCam0.setParam(paramTypeCamera::paramFloat::GAIN, 12.0f);
-#ifdef PROJECTOR
-	ximeaCam0.setParam(paramTypeXimea::AcquisitionMode::TriggerMode);
-#else
-	ximeaCam0.setParam(paramTypeXimea::AcquisitionMode::EnableAcquisitionFrameRate);
-#endif
-
-	ximeaCam0.start();
-
-	cv::Mat img_ximea0_cam = cv::Mat(ximea_cam_height, ximea_cam_width, CV_8UC1, cv::Scalar::all(255));
-	cv::Mat img_ximea0_cam_display = cv::Mat(ximea_cam_height, ximea_cam_width, CV_8UC3);
-
-
-	ximeaCam1.connect(1);
-
-	ximeaCam1.setParam(paramTypeCamera::paramInt::WIDTH, ximea_cam_width);
-	ximeaCam1.setParam(paramTypeCamera::paramInt::HEIGHT, ximea_cam_height);
-	ximeaCam1.setParam(paramTypeCamera::paramFloat::FPS, 100.0f);
-	ximeaCam1.setParam(paramTypeCamera::paramFloat::GAIN, 12.0f);
-#ifdef PROJECTOR
-	ximeaCam1.setParam(paramTypeXimea::AcquisitionMode::TriggerMode);
-#else
-	ximeaCam1.setParam(paramTypeXimea::AcquisitionMode::EnableAcquisitionFrameRate);
-#endif
-
-	ximeaCam1.start();
-
-	cv::Mat img_ximea1_cam = cv::Mat(ximea_cam_height, ximea_cam_width, CV_8UC1, cv::Scalar::all(255));
-	cv::Mat img_ximea1_cam_display = cv::Mat(ximea_cam_height, ximea_cam_width, CV_8UC3);
-
-	cv::Mat img_ximea0_static = cv::Mat(ximea_cam_height, ximea_cam_width, CV_8UC1, cv::Scalar::all(255));
-	cv::Mat img_ximea1_static = cv::Mat(ximea_cam_height, ximea_cam_width, CV_8UC1, cv::Scalar::all(255));
-
-	vector<cv::Mat> static_pic0;
-	vector<cv::Mat> static_pic1;
-
-	for (int i = 0; i < 10; i++) {
-		static_pic0.push_back(cv::Mat(ximea_cam_height, ximea_cam_width, CV_8UC1, cv::Scalar::all(255)));
-		static_pic1.push_back(cv::Mat(ximea_cam_height, ximea_cam_width, CV_8UC1, cv::Scalar::all(255)));
-	}
-#pragma endregion
-
 
 
 #pragma region HSP Open
@@ -571,6 +390,7 @@ inline void mainloop() {
 
 #pragma endregion 
 #endif
+
 
 #pragma region GLFW kit
 	//cv::Mat img_render = (cv::Mat(proj_height, proj_width, CV_8UC3, cv::Scalar::all(255)));
@@ -614,86 +434,6 @@ inline void mainloop() {
 		});
 	thread_capture.detach();
 
-	std::thread thread_capture_ximea([&] {
-		while (thread_capture_ximea_flag) {
-#ifdef CAMERA
-			ximeaCam0.captureFrame(img_ximea0_cam.data);
-
-			img_ximea0_cam.copyTo(img_ximea0_cam_display);
-			ximeaCam1.captureFrame(img_ximea1_cam.data);
-
-			img_ximea1_cam.copyTo(img_ximea1_cam_display);
-#endif
-
-			float d = abs(center[0] - static_center[0]);
-			float dl = abs(v);
-
-
-			if (d <= epsilon) {
-				//ut << d << endl;
-
-
-				if (mode == STATIC && captureflag) {
-					double p1 = getPSNR(img_ximea0_static, img_ximea0_cam);
-					double p2 = getPSNR(img_ximea1_static, img_ximea1_cam);
-					printf("PSNR: cam1:%3.1f cam2:%3.1f \n", p1, p2);
-					string pass0, pass1;
-					if (texid == 0) {
-						pass0 = directory + "/Static/cam0/correct/" + to_string(static_psnr.size()) + ".png";
-						pass1 = directory + "/Static/cam1/correct/" + to_string(static_psnr.size()) + ".png";
-					}
-					else {
-						pass0 = directory + "/Static/cam0/inverse/" + to_string(static_psnr.size()) + ".png";
-						pass1 = directory + "/Static/cam1/inverse/" + to_string(static_psnr.size()) + ".png";
-					}
-
-
-					cv::imwrite(pass0, img_ximea0_cam);
-					cv::imwrite(pass1, img_ximea1_cam);
-
-					static_psnr.push_back((p1 + p2) / 2.0);
-
-
-					std::cout << "static count:" << static_psnr.size() << std::endl;
-					if (static_psnr.size() <= 10) {
-						img_ximea0_cam.copyTo(static_pic0[static_psnr.size() - 1]);
-						img_ximea1_cam.copyTo(static_pic1[static_psnr.size() - 1]);
-					}
-					printf("captured\n");
-					captureflag = false;
-
-
-				}
-				else if (mode == MOVE && movecapture) {
-					if (dl >= 1.5f && dl <= maxV) {
-						string pass0 = directory + "/Moving/cam0/" + to_string(move_psnr.size()) + ".png";
-						string pass1 = directory + "/Moving/cam1/" + to_string(move_psnr.size()) + ".png";
-
-						cv::imwrite(pass0, img_ximea0_cam);
-						cv::imwrite(pass1, img_ximea1_cam);
-						double p1 = 0.0;
-						double p2 = 0.0;
-						printf("PSNR: cam1:%3.1f cam2:%3.1f \n", p1, p2);
-						move_psnr.push_back((p1 + p2) / 2.0);
-
-						info.datafile << dl << "," << endl;
-
-						std::cout << "velocity: " << dl << std::endl;
-						printf("captured\n");
-						printf("Epoch:%d\n\n", move_psnr.size());
-						captureflag = false;
-						movecapture = false;
-
-					}
-				}
-
-			}
-
-			thread_capture_ximea_cnt++;
-			SetEvent(event_capture_ximea);
-		}
-		});
-	thread_capture_ximea.detach();
 
 
 
@@ -710,50 +450,52 @@ inline void mainloop() {
 
 
 		float corner_xyz_cam[12] = { 0, };
-		float pre_corner_xyz_cam_filtered[12] = { 0, };
-		float corner_xyz_cam_filtered[12] = { 0, };
+		float corner_xyz_cam_i[12] = { 0, };
+
 		float corner_xyz_undistorted[12] = { 0, };
 		float corner_xyz_proj[12] = { 0, };
-		float pre_corner_xyz_proj[12] = { 0, };
-		float corner_xyz_cam_tmp[12] = { 0, };
+
+
 		float corner_gl[12] = { 0, };
 		bool corner_detected[4] = { false, };
 		int cntn = 0;
 		float pre_circumstance = 0.0f;
 		float prex = 0.0;
-		int dir = 0;
-		cv::Mat F = cv::imread("offset.png", 0);
-		cv::Mat src1 = cv::imread("purin.jpg", 0);
-		cv::flip(src1, src1, -1);
-		cv::flip(F, F, -1);
-		cv::Mat dst;
-		src1.copyTo(dst);
+
 		cv::Point2f centers;
-		
+
 		cv::Mat src2;
 		int count = 0;
+
+		springSimulate spring;
+		vector<float> k;
+		k.push_back(0.4f);
+		k.push_back(1.5f);
+		k.push_back(1.5f);
+		k.push_back(0.8f);
+
+		spring.Init(corner_xyz_cam, k, 30.0f);
+
+		cv::Mat dst = cv::Mat(1024, 1024, CV_8UC1, cv::Scalar(0.0f));
+
+
 		while (thread_process_flag) {
 			WaitForSingleObject(event_capture, INFINITE);
 			//calib.Calibrate(img_cam, img_cam_undistorted);
 			getCorners(img_cam, img_display_cam, corner_xyz_cam, corner_detected, center, pre_center, ppre_center);
 			//lowpassFilter(corner_xyz_cam_filtered, pre_corner_xyz_cam_filtered, corner_xyz_cam);
 
-
 			calib.UndistortPerPoint(corner_xyz_cam, corner_xyz_undistorted, corner_detected);
 			//std::cout << corner_xyz_undistorted[1] << std::endl;
 			cvtHomography(corner_xyz_undistorted, corner_xyz_proj, homography);
 
-			count++;
-			float diff = 2.0f * sin((double)count * 0.02);
-			centers.x = src1.rows / 2.0f + diff;
-			centers.y = src1.cols / 2.0f;
-			cv::getRectSubPix(src1, src1.size(), centers, src2);
+			//cv::imshow("render", dst);
+			//cv::waitKey(1);
+			glfwkit.render(corner_xyz_proj, &img_render, dst);
 
-			diffImage(src1, src2, dst, F, 100.0);
-			
 
 			//High-speed Rendering without GLFW GUI
-			glfwkit.render(corner_xyz_proj, &img_render, dst);
+
 			//glkit.render(corner_xyz_proj, &img_render, texid);
 			//Display-rate Rendering with GLFW GUI
 			//glfwkit.update(corner_gl, &img_render);
@@ -765,20 +507,7 @@ inline void mainloop() {
 
 
 			if (cntn % 60 == 0) {
-				if (dir == 0) {
-					//texid++;
-					if (texid > 10) {
-						texid = 10;
-						dir = 1;
-					}
-				}
-				else {
-					//texid--;
-					if (texid < 0) {
-						texid = 0;
-						dir = 0;
-					}
-				}
+
 				if (abs(circumstance) < 1.5f) {
 					circumstance = 0.0f;
 					pre_circumstance = 0.0f;
@@ -864,14 +593,14 @@ inline void mainloop() {
 			sec = (double)(end.QuadPart - start.QuadPart) / freq.QuadPart;
 
 			if (!proj_calibration_flag) {
-				/*
+
 				printf("thread_capture %3.1f[fps]\n", thread_capture_cnt / sec);
 				printf("thread_process %3.1f[fps]\n", thread_process_cnt / sec);
 				printf("thread_project %3.1f[fps]\n", thread_project_cnt / sec);
 				printf("thread_capture_ximea %3.1f[fps]\n", thread_capture_ximea_cnt / sec);
-				printf("center %3.1f %3.1f\n", center[0], center[1]);
+
 				printf("\n");
-				*/
+
 			}
 		}
 		});
@@ -918,47 +647,6 @@ inline void mainloop() {
 			case 100:
 				mspf = 33; break;
 			}
-		}
-		else if (key == 's') {
-			cv::imwrite("cam0_move.png", img_ximea0_cam);
-			cv::imwrite("cam1_move.png", img_ximea1_cam);
-			//PSNR.writeData((float)proj_fps, static_psnr, move_psnr);
-
-			cout << "saved" << endl;
-		}
-		else if (key == 'c') {
-			static_center[0] = center[0];
-			static_center[1] = center[1];
-			printf("static_center x:%3.1f y:%3.1f\n\n", static_center[0], static_center[1]);
-			info.datafile << "static center pos," << static_center[0] << "," << static_center[1] << "," << endl;
-			img_ximea0_cam.copyTo(img_ximea0_static);
-			img_ximea1_cam.copyTo(img_ximea1_static);
-			circumstance = 0.0f;
-		}
-		else if (key == 'p') {
-			printf("prepared capture...\n");
-			captureflag = true;
-
-		}
-		else if (key == 'f') {
-			printf("canceled capture...\n");
-			captureflag = false;
-		}
-		else if (key == 'm') {
-			mode = MOVE;
-			printf("mode:move\n");
-			info.datafile << "velocity,psnr" << endl;
-		}
-		else if (key == 't') {
-			mode = STATIC;
-			printf("mode:static\n\n");
-			if (texid == 0) {
-				texid = 1;
-			}
-			else if (texid == 1) {
-				texid = 0;
-			}
-			printf("texid:%d\n\n", texid);
 		}
 		img_render.copyTo(img_display_proj);
 		//cv::imshow("img_display_cam", img_display_cam);

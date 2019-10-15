@@ -147,10 +147,8 @@
     <ClInclude Include="common.h" />
     <ClInclude Include="dataStorage.h" />
     <ClInclude Include="EstimateOffset.h" />
+    <ClInclude Include="expariment3D.h" />
     <ClInclude Include="exparimentLena.h" />
-    <ClInclude Include="exparimentLR.h" />
-    <ClInclude Include="exparimentPurin.h" />
-    <ClInclude Include="exparimentSpring.h" />
     <ClInclude Include="experimentFPS.h" />
     <ClInclude Include="experimentVelocity.h" />
     <ClInclude Include="GLFWkit.h" />
