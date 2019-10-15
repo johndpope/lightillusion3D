@@ -3,14 +3,15 @@
 #include"common.h"
 
 #include"GLFWkit.h"
-#include"pnpchange.h"
+#include"expariment3D.h"
 //#include"EstimateOffset.h"
 //#include"exparimentLR.h"
 //#include"exparimentSpring.h"
 //#include"exparimentPurin.h"
 //#include"exparimentLena.h"
 int main() {
-	//mainloop();
+	mainloop();
+	/*
 	GLFWkit glfwkit("glfwkit", 1024, 768,"horse.obj");
 	glfwkit.setup();
 	float corner_gl[12] = { 0, };
@@ -21,6 +22,7 @@ int main() {
 	while (glfwkit.update(corner_gl)) {
 		
 	}
+	*/
 	
 	//cv::waitKey(0);
 	//cv::Size size = cv::Size(400, 400);

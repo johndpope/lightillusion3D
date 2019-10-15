@@ -10,6 +10,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/string_cast.hpp>
+
+#include"pnpchange.h"
 //Only for triangles
 class Model {
 public:
@@ -157,9 +159,18 @@ public:
 	VertexArray vertexArray;
 	glm::mat4 projection;
 	glm::mat4 M;
+
+	float objpoints[12] = { 0,0,0,
+							25,0,0,
+							25,-28,0,
+							0,-28,0
+	};
+
+	MVmatrix mvMatrix;
 public:
 	//Constructor
 	GLkit(int width, int height) :
+		mvMatrix("intrinsics.xml"),
 		//Projection
 		render_size{ width, height },
 		render_aspect(width * 1.0 / height),
@@ -171,6 +182,7 @@ public:
 		//ModelView
 		projection = glm::mat4(1.0);
 		M = glm::mat4(1.0);
+		
 
 	}
 
@@ -293,6 +305,12 @@ public:
 			
 			//Rendering
 			vertexArray.SetActive();
+
+			mvMatrix.change3Dpoint(objpoints, input_xyz, M, 4);
+			shader.SetMatrixUniform("MVP", projection * M);
+
+			//cout << glm::to_string(M) << endl;
+
 			//glDrawElements(GL_TRIANGLES, model.varray.size()/8, GL_UNSIGNED_INT, nullptr);
 			glDrawArrays(GL_TRIANGLES, 0, model.varray.size()/8);
 		}

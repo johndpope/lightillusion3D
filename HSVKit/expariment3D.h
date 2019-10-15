@@ -13,7 +13,7 @@
 
 
 
-#define PROJECTOR
+//#define PROJECTOR
 #define CAMERA
 const int track_r = 10;
 const int search_r = 64;
@@ -34,21 +34,20 @@ const string directory = "Expariment/Velocity_gausian_Accel_169_100e";
 #define STATIC 0
 #define MOVE 1
 
-
+/*
 const int search_cxy[4][2] = {
 	{ 324 - 128, 237 + 120 },
 	{ 324 + 128, 237 + 120 },
 	{ 324 + 128, 237 - 50 },
 	{ 324 - 128, 237 - 50 },
 };
-/*
-const int search_cxy[4][2] = {
-	{ 324 - 128, (237 + 50)/2 },
-	{ 324 + 128, (237 + 50)/2 },
-	{ 324 + 128, 64 },
-	{ 324 - 128, 64 },
-};
 */
+const int search_cxy[4][2] = {
+	{ 324 - 128, 237 + 100 },
+	{ 324 + 128, 237 + 100 },
+	{ 324 + 128, 237 - 130 },
+	{ 324 - 128, 237 - 130 },
+};
 
 int threshold = 230;
 const uint min_m00 = 10;
@@ -440,7 +439,7 @@ inline void mainloop() {
 
 
 	std::thread thread_process([&] {
-		GLFWkit glfwkit("glfwkit", proj_width, proj_height);
+		GLFWkit glfwkit("glfwkit", proj_width, proj_height,"horse.obj");
 		glfwkit.setup();
 
 		//GLkit glkit(proj_width, proj_height);
@@ -467,15 +466,6 @@ inline void mainloop() {
 		cv::Mat src2;
 		int count = 0;
 
-		springSimulate spring;
-		vector<float> k;
-		k.push_back(0.4f);
-		k.push_back(1.5f);
-		k.push_back(1.5f);
-		k.push_back(0.8f);
-
-		spring.Init(corner_xyz_cam, k, 30.0f);
-
 		cv::Mat dst = cv::Mat(1024, 1024, CV_8UC1, cv::Scalar(0.0f));
 
 
@@ -491,7 +481,7 @@ inline void mainloop() {
 
 			//cv::imshow("render", dst);
 			//cv::waitKey(1);
-			glfwkit.render(corner_xyz_proj, &img_render, dst);
+			glfwkit.render(corner_xyz_cam, &img_render);
 
 
 			//High-speed Rendering without GLFW GUI
@@ -607,17 +597,7 @@ inline void mainloop() {
 	thread_fps.detach();
 #pragma endregion 
 
-#pragma region Parameter bar
-	cv::namedWindow("parameters");
-	int velocityValue = 60;
-	cv::createTrackbar("velocityAccel", "parameters", &velocityValue, 300, OnVelocityAccelChanged);
-	cv::setTrackbarPos("velocityAccel", "parameters", 60);
-	int lowpassValue = 0;
-	cv::createTrackbar("lowpass", "parameters", &lowpassValue, 100, OnLowpassChanged);
-	cv::setTrackbarPos("lowpass", "parameters", 0);
-	cv::createTrackbar("threshold", "parameters", &threshold, 255);
-	cv::setTrackbarPos("threshold", "parameters", 230);
-#pragma endregion
+
 
 #pragma region Main thread
 	//dataStorage PSNR(directory+"/PSNR.csv");
@@ -652,8 +632,7 @@ inline void mainloop() {
 		//cv::imshow("img_display_cam", img_display_cam);
 		cv::imshow("img_display_cam", img_display_cam);
 		cv::imshow("img_display_proj", img_display_proj);
-		cv::imshow("img_display_ximea0", img_ximea0_cam_display);
-		cv::imshow("img_display_ximea1", img_ximea1_cam_display);
+
 		if (abs(circumstance) > 1.3f) {
 			//cout << circumstance << endl;
 		}
@@ -682,10 +661,7 @@ inline void mainloop() {
 	cam.stop();
 	cam.disconnect();
 
-	ximeaCam0.stop();
-	ximeaCam0.disconnect();
-	ximeaCam1.stop();
-	ximeaCam1.disconnect();
+
 #endif
 #pragma endregion 
 
