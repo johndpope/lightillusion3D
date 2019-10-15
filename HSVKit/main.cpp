@@ -3,6 +3,7 @@
 #include"common.h"
 
 #include"GLFWkit.h"
+#include"pnpchange.h"
 //#include"EstimateOffset.h"
 //#include"exparimentLR.h"
 //#include"exparimentSpring.h"
@@ -14,16 +15,9 @@ int main() {
 	glfwkit.setup();
 	float corner_gl[12] = { 0, };
 	int key;
-	float v;
-	vector<float> varray = glfwkit.glkit.model.varray;
-	/*
-	for (int i = 0; i < varray.size() / 8; i++) {
-		
-			cout << varray[i * 8 + 5] << " ";
-		
-		cout << endl;
-	}
-	*/
+	
+
+
 	while (glfwkit.update(corner_gl)) {
 		
 	}

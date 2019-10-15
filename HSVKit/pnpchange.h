@@ -1,12 +1,14 @@
 #pragma once
 #include"common.h"
-class pnpchange {
+
+#include<glm/glm.hpp>
+class MVmatrix {
 private:
 	cv::Mat intrinsics_matrix;
 	cv::Mat distortion_coeffs;
 	cv::Mat rvec, tvec;
 public:
-	pnpchange(const string fileName) {
+	MVmatrix(const string fileName) {
 		cv::FileStorage fs(fileName, cv::FileStorage::READ);
 		fs["camera_matrix"] >> intrinsics_matrix;
 		fs["distortion_coefficients"] >> distortion_coeffs;
@@ -14,7 +16,7 @@ public:
 		fs.release();
 	}
 
-	void change3Dpoint(float* objPoints, float* imgPoints, float* dst,int pointnum) {
+	void change3Dpoint(float* objPoints, float* imgPoints, glm::mat4 *dst, int pointnum) {
 		vector < cv::Point3f > objp;
 		vector<cv::Point2f> imgp;
 		for (int i = 0; i < pointnum; i++) {
@@ -40,8 +42,16 @@ public:
 												0,0,-1,0,
 												0,0,0,0);
 		cv::Mat Tgl = RotX*T;
+		fromCV2GLM(Tgl, dst);
 
+	}
 
+	void fromCV2GLM(const cv::Mat& cvmat, glm::mat4* glmmat) {
+		if (cvmat.cols != 4 || cvmat.rows != 4 || cvmat.type() != CV_32FC1) {
+			cout << "Matrix conversion error!" << endl;
+			return;
+		}
+		memcpy(glm::value_ptr(*glmmat), cvmat.data, 16 * sizeof(float));
 	}
 
 };

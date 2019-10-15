@@ -1,12 +1,8 @@
-# Blender MTL File: 'untitled.blend'
-# Material Count: 1
-
 newmtl horse:None
-Ns 500.000001
-Ka 0.800000 0.800000 0.800000
-Kd 0.800000 0.800000 0.800000
-Ks 0.800000 0.800000 0.800000
-Ke 0.0 0.0 0.0
-Ni 1.000000
-d 1.000000
-illum 3
+illum 4
+Kd 0.80 0.80 0.80
+Ka 0.80 0.80 0.80
+Tf 1.00 1.00 1.00
+Ni 1.00
+Ks 0.80 0.80 0.80
+Ns 500.00
