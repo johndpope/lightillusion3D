@@ -2,6 +2,7 @@
 #include"common.h"
 
 #include<glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 class MVmatrix {
 private:
 	cv::Mat intrinsics_matrix;
@@ -34,8 +35,9 @@ public:
 		cv::Rodrigues(rvec, R);
 		
 		R = R.t();  // rotation of inverse
-		tvec = -R * tvec;
 		
+		tvec = -R * tvec;
+		//cout << tvec << endl;
 		cv::Mat T=cv::Mat::eye(4, 4, R.type()); // T is 4x4
 		//cv::Mat Tgl(4, 4, R.type()); // T is 4x4
 
@@ -51,10 +53,13 @@ public:
 		glm::mat4 RotX = glm::mat4(1, 0, 0, 0,
 			0, -1, 0, 0,
 			0, 0, -1, 0,
-			0, 0, 0, 0);
+			0, 0, 0, 1);
 
-		dst = RotX *dst;
-		//cout << to_string(dst) << endl;
+		//dst = RotX *dst;
+		//dst = glm::mat4(1.0f);
+		//dst = glm::translate(dst, glm::vec3((float)tvec.at<double>(0), (float)tvec.at<double>(1), (float)tvec.at<double>(2)));
+		//dst = glm::translate(dst, glm::vec3(0.0f,0.0f,-1.0f));
+		cout << to_string(dst) << endl;
 		
 
 	}

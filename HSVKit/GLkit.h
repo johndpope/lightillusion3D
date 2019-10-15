@@ -161,9 +161,9 @@ public:
 	glm::mat4 M;
 
 	float objpoints[12] = { 0,0,0,
-							25,0,0,
-							25,-28,0,
-							0,-28,0
+							0.25f,0,0,
+							0.25f,0.28f,0,
+							0,0.28f,0
 	};
 
 	MVmatrix mvMatrix;
@@ -245,7 +245,8 @@ public:
 		
 		//glEnable(GL_LIGHT0);
 		//glEnable(GL_TEXTURE_2D);
-		projection = glm::ortho(-view_fov * render_aspect, view_fov * render_aspect, -view_fov, view_fov, 0.1f, 10.0f);
+		projection = glm::ortho(-view_fov * render_aspect, view_fov * render_aspect, -view_fov, view_fov, -50.0f, 50.0f);
+		//cout <<glm::to_string( projection)<< endl;
 		M = glm::translate(M, glm::vec3(0.0, 0.0, 1.0f));
 		shader.SetActive();
 		//shader.printProgram();
@@ -309,7 +310,7 @@ public:
 			mvMatrix.change3Dpoint(objpoints, input_xyz, M, 4);
 			shader.SetMatrixUniform("MVP", projection * M);
 
-			//cout << glm::to_string(M) << endl;
+			//cout << glm::to_string(projection*M) << endl;
 
 			//glDrawElements(GL_TRIANGLES, model.varray.size()/8, GL_UNSIGNED_INT, nullptr);
 			glDrawArrays(GL_TRIANGLES, 0, model.varray.size()/8);

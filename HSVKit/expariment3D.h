@@ -14,7 +14,7 @@
 
 
 //#define PROJECTOR
-#define CAMERA
+//#define CAMERA
 const int track_r = 10;
 const int search_r = 64;
 
@@ -66,19 +66,28 @@ float homography_cam[4][2];
 
 cv::Mat img_ximea0_cam;
 
-
+cv::Mat H;
 
 void getHomography(cv::Mat img, float* h, bool read = false) {
 	cv::Mat img_calib;
 	cv::Mat img_bin;
 	cv::Mat img_masked;
 	mouseParam mouse;
+	H = cv::Mat(3, 3, CV_64FC1);
 
 	if (read) {
 		FILE* fp = fopen("Homography.txt", "r");
 		for (int i = 0; i < 9; i++) {
 			fscanf(fp, "%f\n", &h[i]);
+			
 		}
+		for (int i = 0; i < 3; i++) {
+			for (int j = 0; j < 3; j++) {
+				H.at<double>(i, j) = (double)h[i * 3 + j];
+				//cout << h[i * 3 + j] << endl;
+			}
+		}
+		cout << H << endl;
 		fclose(fp);
 	}
 	else {
@@ -162,7 +171,7 @@ void getHomography(cv::Mat img, float* h, bool read = false) {
 			dst.push_back(cv::Point2f(homography_proj[i][0], homography_proj[i][1]));
 		}
 
-		cv::Mat H = cv::findHomography(src, dst);
+		H = cv::findHomography(src, dst);
 		for (int i = 0; i < 3; i++) {
 			for (int j = 0; j < 3; j++) {
 				h[i * 3 + j] = H.at<double>(i, j);
@@ -199,8 +208,11 @@ inline void cvtHomography(float* input, float* output, float* h) {
 		p[1] = h[3] * input[i * 3 + 0] + h[4] * input[i * 3 + 1] + h[5];
 		p[2] = h[6] * input[i * 3 + 0] + h[7] * input[i * 3 + 1] + h[8];
 
-		output[i * 3 + 0] = (p[0] / p[2] - 512.0f) * 0.001302083f;
-		output[i * 3 + 1] = (p[1] / p[2] - 384.0f) * 0.001302083f;
+		//output[i * 3 + 0] = (p[0] / p[2] - 512.0f) * 0.001302083f;
+		//output[i * 3 + 1] = (p[1] / p[2] - 384.0f) * 0.001302083f;
+
+		output[i * 3 + 0] = (p[0] / p[2]);
+		output[i * 3 + 1] = (p[1] / p[2]);
 
 	}
 
@@ -348,7 +360,8 @@ inline void mainloop() {
 
 	cv::Mat img_cam = cv::Mat(cam_height, cam_width, CV_8UC1, cv::Scalar::all(0));
 	cv::Mat img_display_cam = cv::Mat(cam_height, cam_width, CV_8UC3);
-
+	cv::Mat img_proj_cam = cv::Mat(cam_height,cam_width, CV_8UC1, cv::Scalar::all(255));
+	cv::Mat img_display_proj_cam = cv::Mat(cam_height, cam_width, CV_8UC3);
 
 #pragma endregion
 
@@ -439,7 +452,7 @@ inline void mainloop() {
 
 
 	std::thread thread_process([&] {
-		GLFWkit glfwkit("glfwkit", proj_width, proj_height,"horse.obj");
+		GLFWkit glfwkit("glfwkit", cam_width, cam_height,"horse.obj");
 		glfwkit.setup();
 
 		//GLkit glkit(proj_width, proj_height);
@@ -481,7 +494,9 @@ inline void mainloop() {
 
 			//cv::imshow("render", dst);
 			//cv::waitKey(1);
-			glfwkit.render(corner_xyz_cam, &img_render);
+			glfwkit.render(corner_xyz_cam, &img_proj_cam);
+
+			cv::warpPerspective(img_proj_cam, img_render, H, img_display_proj.size());
 
 
 			//High-speed Rendering without GLFW GUI
@@ -494,6 +509,7 @@ inline void mainloop() {
 				//cv::cvtColor(img_render, img_proj, cv::COLOR_RGB2GRAY);
 
 			}
+			
 
 
 			if (cntn % 60 == 0) {
@@ -629,9 +645,11 @@ inline void mainloop() {
 			}
 		}
 		img_render.copyTo(img_display_proj);
+		//img_proj_cam.copyTo(img_display_proj_cam);
 		//cv::imshow("img_display_cam", img_display_cam);
 		cv::imshow("img_display_cam", img_display_cam);
 		cv::imshow("img_display_proj", img_display_proj);
+		//cv::imshow("img_display_proj", img_display_proj_cam);
 
 		if (abs(circumstance) > 1.3f) {
 			//cout << circumstance << endl;
