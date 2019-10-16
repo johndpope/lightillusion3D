@@ -159,12 +159,22 @@ public:
 	VertexArray vertexArray;
 	glm::mat4 projection;
 	glm::mat4 M;
+	glm::mat4 viewMat;
 
-	float objpoints[12] = { 0,0,0,
-							0.25f,0,0,
-							0.25f,0.28f,0,
-							0,0.28f,0
+	
+	float objpoints[12] = { -0.25f/2.0f,0.28f/2.0f,0,
+							0.25f/2.0f,0.28f/2.0f,0,
+							0.25f/2.0f,-0.28f/2.0f,0,
+							-0.25f/2.0f,-0.28f/2.0f,0
 	};
+	
+	/*
+	float objpoints[12] = { -25.0f / 2.0f,-28.0f / 2.0f,0,
+							25.0f / 2.0f,-28.0f / 2.0f,0,
+							25.0f / 2.0f,28.0f / 2.0f,0,
+							-25.0f / 2.0f,28.0f / 2.0f,0
+	};*/
+
 
 	MVmatrix mvMatrix;
 public:
@@ -245,7 +255,16 @@ public:
 		
 		//glEnable(GL_LIGHT0);
 		//glEnable(GL_TEXTURE_2D);
-		projection = glm::ortho(-view_fov * render_aspect, view_fov * render_aspect, -view_fov, view_fov, -50.0f, 50.0f);
+		//projection = glm::ortho(-view_fov * render_aspect, view_fov * render_aspect, -view_fov, view_fov, -50.0f, 50.0f);
+		
+		//projection = glm::perspective((float)glm::radians(31.68), render_aspect, 0.01f, 10.0f);
+		cameraFrustumRH(mvMatrix.intrinsics_matrix, cv::Size(render_size[0], render_size[1]), projection, 0.1, 100.0);
+		viewMat=glm::mat4(1.0)
+			* glm::lookAt(
+				glm::vec3(0, 0, 0), // カメラの原点
+				glm::vec3(0, 0, 1), // 見ている点
+				glm::vec3(0, 1, 0)  // カメラの上方向
+			);
 		//cout <<glm::to_string( projection)<< endl;
 		M = glm::translate(M, glm::vec3(0.0, 0.0, 1.0f));
 		shader.SetActive();
@@ -308,9 +327,9 @@ public:
 			vertexArray.SetActive();
 
 			mvMatrix.change3Dpoint(objpoints, input_xyz, M, 4);
-			shader.SetMatrixUniform("MVP", projection * M);
+			shader.SetMatrixUniform("MVP", projection *viewMat* M);
 
-			//cout << glm::to_string(projection*M) << endl;
+			cout << glm::to_string(projection*viewMat*M) << endl;
 
 			//glDrawElements(GL_TRIANGLES, model.varray.size()/8, GL_UNSIGNED_INT, nullptr);
 			glDrawArrays(GL_TRIANGLES, 0, model.varray.size()/8);
@@ -399,6 +418,31 @@ public:
 	}
 
 	void touchEnd(const Eigen::Vector2f& pos) {
+	}
+
+	void cameraFrustumRH(cv::Mat camMat, cv::Size camSz, glm::mat4& projMat, double znear, double zfar)
+	{
+		// Load camera parameters
+		double fx = camMat.at<double>(0, 0);
+		double fy = camMat.at<double>(1, 1);
+		double cx = camMat.at<double>(0, 2);
+		double cy = camMat.at<double>(1, 2);
+		double w = camSz.width, h = camSz.height;
+
+		// 参考:https://strawlab.org/2011/11/05/augmented-reality-with-OpenGL
+		// With window_coords=="y_down", we have:
+		// [2 * K00 / width,   -2 * K01 / width,   (width - 2 * K02 + 2 * x0) / width,     0]
+		// [0,                 2 * K11 / height,   (-height + 2 * K12 + 2 * y0) / height,  0]
+		// [0,                 0,                  (-zfar - znear) / (zfar - znear),       -2 * zfar*znear / (zfar - znear)]
+		// [0,                 0,                  -1,                                     0]
+
+
+		glm::mat4 projection(
+			-2.0 * fx / w, 0, 0, 0,
+			0, -2.0 * fy / h, 0, 0,
+			1.0 - 2.0 * cx / w, -1.0 + 2.0 * cy / h, -(zfar + znear) / (zfar - znear), -1.0,
+			0, 0, -2.0 * zfar * znear / (zfar - znear), 0);
+		projMat = projection;
 	}
 
 private:
