@@ -38,7 +38,7 @@ public:
 		
 		//R = R.t();  // rotation of inverse
 		//cout << R << endl;
-		//tvec = -R * tvec;
+		//tvec = R * tvec;
 		//cout << tvec << endl;
 		cv::Mat T=cv::Mat::eye(4, 4, R.type()); // T is 4x4
 		//cv::Mat Tgl(4, 4, R.type()); // T is 4x4

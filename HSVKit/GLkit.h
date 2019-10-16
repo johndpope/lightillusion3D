@@ -327,7 +327,7 @@ public:
 			vertexArray.SetActive();
 
 			mvMatrix.change3Dpoint(objpoints, input_xyz, M, 4);
-			shader.SetMatrixUniform("MVP", projection *viewMat* M);
+			shader.SetMatrixUniform("MVP", projection*viewMat*M);
 
 			//cout << glm::to_string(projection*viewMat*M) << endl;
 
