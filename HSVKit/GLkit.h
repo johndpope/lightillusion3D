@@ -329,7 +329,7 @@ public:
 			mvMatrix.change3Dpoint(objpoints, input_xyz, M, 4);
 			shader.SetMatrixUniform("MVP", projection *viewMat* M);
 
-			cout << glm::to_string(projection*viewMat*M) << endl;
+			//cout << glm::to_string(projection*viewMat*M) << endl;
 
 			//glDrawElements(GL_TRIANGLES, model.varray.size()/8, GL_UNSIGNED_INT, nullptr);
 			glDrawArrays(GL_TRIANGLES, 0, model.varray.size()/8);

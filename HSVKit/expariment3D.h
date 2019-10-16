@@ -452,7 +452,7 @@ inline void mainloop() {
 
 
 	std::thread thread_process([&] {
-		GLFWkit glfwkit("glfwkit", cam_width, cam_height,"plane.obj");
+		GLFWkit glfwkit("glfwkit", cam_width, cam_height,"horse.obj");
 		glfwkit.setup();
 
 		//GLkit glkit(proj_width, proj_height);
