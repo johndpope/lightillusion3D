@@ -163,10 +163,10 @@ public:
 	cv::Mat H;
 
 	
-	float objpoints[12] = { -0.25f/2.0f,0.28f/2.0f,0,
-							0.25f/2.0f,0.28f/2.0f,0,
+	float objpoints[12] = { -0.25f/2.0f,-0.28f/2.0f,0,
 							0.25f/2.0f,-0.28f/2.0f,0,
-							-0.25f/2.0f,-0.28f/2.0f,0
+							0.25f/2.0f,0.28f/2.0f,0,
+							-0.25f/2.0f,0.28f/2.0f,0
 	};
 	
 	/*
@@ -265,8 +265,8 @@ public:
 		
 		//projection = glm::perspective((float)glm::radians(31.68), render_aspect, 0.01f, 10.0f);
 		H.at<double>(1, 1) *= -1;
-		H.at<double>(0, 1) = 0;
-		H.at<double>(1, 0) = 0;
+		//H.at<double>(0, 1) = 0;
+		//H.at<double>(1, 0) = 0;
 		mvMatrix.intrinsics_matrix = H * mvMatrix.intrinsics_matrix;
 		
 		cameraFrustumRH(mvMatrix.intrinsics_matrix, cv::Size(render_size[0], render_size[1]), projection, 0.1, 100.0);
