@@ -20,7 +20,7 @@ public:
 	char* fileName;
 
 public:
-    GLFWkit(char *title, int window_w, int window_h,char* m_fileName=NULL) :
+    GLFWkit(char *title, int window_w, int window_h,cv::Mat H,char* m_fileName=NULL) :
         //Window
         window_size{ window_w, window_h },
 
@@ -30,7 +30,7 @@ public:
         press_position_last{ 0.0f, 0.0f },
 		fileName(m_fileName),
         //GLrender
-        glkit(window_w, window_h)
+        glkit(window_w, window_h,H)
     {
 
         if (!glfwInit()) {

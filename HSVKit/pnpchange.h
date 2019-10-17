@@ -29,14 +29,14 @@ public:
 			imgp.push_back(tmp2);
 		}
 		//cout << endl;
-		
-		cv::solvePnP(objp, imgp, intrinsics_matrix, distortion_coeffs, rvec, tvec);
+		cv::Mat distortion = (cv::Mat_<double>(4, 1) << 0, 0, 0, 0);
+		cv::solvePnP(objp, imgp, intrinsics_matrix,distortion, rvec, tvec);
 		//cout << rvec << tvec << endl;
 		
 		cv::Mat R;
 		cv::Rodrigues(rvec, R);
 		
-		R = R.t();  // rotation of inverse
+		//R = R.t();  // rotation of inverse
 		//cout << R << endl;
 		//tvec = -R * tvec;
 		//cout << tvec << endl;
@@ -57,7 +57,7 @@ public:
 			0, 0, -1, 0,
 			0, 0, 0, 1);
 
-		dst = dst*RotX;
+		//dst = dst*RotX;
 		//dst = glm::mat4(1.0f);
 		//dst = glm::translate(glm::mat4(1.0f), glm::vec3((float)tvec.at<double>(0,0), (float)tvec.at<double>(1,0), (float)tvec.at<double>(2,0)));
 		//dst = glm::translate(dst, glm::vec3(0.0f,0.0f,-1.0f));

@@ -13,8 +13,8 @@
 
 
 
-#define PROJECTOR
-#define CAMERA
+//#define PROJECTOR
+//#define CAMERA
 const int track_r = 10;
 const int search_r = 64;
 
@@ -87,7 +87,7 @@ void getHomography(cv::Mat img, float* h, bool read = false) {
 				//cout << h[i * 3 + j] << endl;
 			}
 		}
-		cout << H << endl;
+		//cout << H << endl;
 		fclose(fp);
 	}
 	else {
@@ -452,7 +452,7 @@ inline void mainloop() {
 
 
 	std::thread thread_process([&] {
-		GLFWkit glfwkit("glfwkit", cam_width, cam_height,"horse.obj");
+		GLFWkit glfwkit("glfwkit", proj_width, proj_height,H,"horse.obj");
 		glfwkit.setup();
 
 		//GLkit glkit(proj_width, proj_height);
@@ -494,9 +494,9 @@ inline void mainloop() {
 
 			//cv::imshow("render", dst);
 			//cv::waitKey(1);
-			glfwkit.render(corner_xyz_cam, &img_proj_cam);
-			cv::flip(img_proj_cam, img_proj_cam, 0);
-			cv::warpPerspective(img_proj_cam, img_render, H, img_display_proj.size());
+			glfwkit.render(corner_xyz_proj, &img_render);
+			//cv::flip(img_proj_cam, img_proj_cam, 0);
+			//cv::warpPerspective(img_proj_cam, img_render, H, img_display_proj.size());
 
 
 			//High-speed Rendering without GLFW GUI
@@ -645,11 +645,11 @@ inline void mainloop() {
 			}
 		}
 		img_render.copyTo(img_display_proj);
-		img_proj_cam.copyTo(img_display_proj_cam);
+		//img_proj_cam.copyTo(img_display_proj_cam);
 		//cv::imshow("img_display_cam", img_display_cam);
 		cv::imshow("img_display_cam", img_display_cam);
 		cv::imshow("img_display_proj", img_display_proj);
-		cv::imshow("img_display_proj_cam", img_display_proj_cam);
+	//	cv::imshow("img_display_proj_cam", img_display_proj_cam);
 
 		if (abs(circumstance) > 1.3f) {
 			//cout << circumstance << endl;

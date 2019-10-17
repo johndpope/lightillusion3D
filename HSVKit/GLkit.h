@@ -160,6 +160,7 @@ public:
 	glm::mat4 projection;
 	glm::mat4 M;
 	glm::mat4 viewMat;
+	cv::Mat H;
 
 	
 	float objpoints[12] = { -0.25f/2.0f,0.28f/2.0f,0,
@@ -179,7 +180,7 @@ public:
 	MVmatrix mvMatrix;
 public:
 	//Constructor
-	GLkit(int width, int height) :
+	GLkit(int width, int height,cv::Mat m_H) :
 		mvMatrix("intrinsics.xml"),
 		//Projection
 		render_size{ width, height },
@@ -187,7 +188,8 @@ public:
 
 		//ModelView
 		view_fov(0.5),
-		view_rot(Eigen::Quaternion<GLfloat>::Identity())
+		view_rot(Eigen::Quaternion<GLfloat>::Identity()),
+		H(m_H)
 	{
 		//ModelView
 		projection = glm::mat4(1.0);
@@ -214,6 +216,10 @@ public:
 	void setup() {
 		cv::Mat texture[40];
 		texture[0] = cv::imread("white.png");
+
+
+		
+		
 		/*
 		for (int i = 0; i < 40; i++) {
 			if (i < 9) {
@@ -258,7 +264,14 @@ public:
 		//projection = glm::ortho(-view_fov * render_aspect, view_fov * render_aspect, -view_fov, view_fov, -50.0f, 50.0f);
 		
 		//projection = glm::perspective((float)glm::radians(31.68), render_aspect, 0.01f, 10.0f);
+		H.at<double>(1, 1) *= -1;
+		H.at<double>(0, 1) = 0;
+		H.at<double>(1, 0) = 0;
+		mvMatrix.intrinsics_matrix = H * mvMatrix.intrinsics_matrix;
+		
 		cameraFrustumRH(mvMatrix.intrinsics_matrix, cv::Size(render_size[0], render_size[1]), projection, 0.1, 100.0);
+		//cout << mvMatrix.intrinsics_matrix << endl;
+		
 		viewMat=glm::mat4(1.0)
 			* glm::lookAt(
 				glm::vec3(0, 0, 0), // ƒJƒƒ‰‚ÌŒ´“_
@@ -328,6 +341,7 @@ public:
 
 			mvMatrix.change3Dpoint(objpoints, input_xyz, M, 4);
 			shader.SetMatrixUniform("MVP", projection*viewMat*M);
+			//shader.SetMatrixUniform("MVP", M*viewMat*projection);
 
 			//cout << glm::to_string(projection*viewMat*M) << endl;
 
