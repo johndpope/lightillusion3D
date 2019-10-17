@@ -61,7 +61,7 @@ public:
 		//dst = glm::mat4(1.0f);
 		//dst = glm::translate(glm::mat4(1.0f), glm::vec3((float)tvec.at<double>(0,0), (float)tvec.at<double>(1,0), (float)tvec.at<double>(2,0)));
 		//dst = glm::translate(dst, glm::vec3(0.0f,0.0f,-1.0f));
-		cout << to_string(dst) << endl;
+		//cout << to_string(dst) << endl;
 		
 
 	}
