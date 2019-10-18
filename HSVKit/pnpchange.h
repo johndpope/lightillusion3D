@@ -36,7 +36,7 @@ public:
 		cv::Mat R;
 		cv::Rodrigues(rvec, R);
 		
-		//R = R.t();  // rotation of inverse
+		R = R.t();  // rotation of inverse
 		//cout << R << endl;
 		//tvec = -R * tvec;
 		//cout << tvec << endl;
