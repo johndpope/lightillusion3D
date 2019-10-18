@@ -13,8 +13,8 @@
 
 
 
-#define PROJECTOR
-#define CAMERA
+//#define PROJECTOR
+//#define CAMERA
 const int track_r = 10;
 const int search_r = 64;
 
@@ -452,7 +452,10 @@ inline void mainloop() {
 
 
 	std::thread thread_process([&] {
-		GLFWkit glfwkit("glfwkit", proj_width, proj_height,H,"horse.obj");
+		cv::Mat KI = (cv::Mat_<double>(3, 3) << proj_width, 0, proj_width / 2, 0, proj_height, proj_height / 2, 0, 0, 1);
+
+		cv::Mat K = (cv::Mat_<double>(3, 3) << cam_width, 0, cam_width / 2, 0, cam_height, cam_height / 2, 0, 0, 1);
+		GLFWkit glfwkit("glfwkit", proj_width, proj_height,KI.inv()*H*K,"horse.obj");
 		glfwkit.setup();
 
 		//GLkit glkit(proj_width, proj_height);
@@ -494,7 +497,7 @@ inline void mainloop() {
 
 			//cv::imshow("render", dst);
 			//cv::waitKey(1);
-			glfwkit.render(corner_xyz_proj, &img_render);
+			glfwkit.render(corner_xyz_undistorted, &img_render);
 			//cv::flip(img_proj_cam, img_proj_cam, 0);
 			//cv::warpPerspective(img_proj_cam, img_render, H, img_display_proj.size());
 

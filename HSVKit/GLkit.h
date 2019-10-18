@@ -162,6 +162,8 @@ public:
 	glm::mat4 viewMat;
 	cv::Mat H;
 
+	glm::mat4 homography;
+
 	
 	float objpoints[12] = { -0.25f/2.0f,-0.28f/2.0f,0,
 							0.25f/2.0f,-0.28f/2.0f,0,
@@ -267,9 +269,11 @@ public:
 		H.at<double>(1, 1) *= -1;
 		//H.at<double>(0, 1) = 0;
 		//H.at<double>(1, 0) = 0;
-		mvMatrix.intrinsics_matrix = H * mvMatrix.intrinsics_matrix;
+		//mvMatrix.intrinsics_matrix = H * mvMatrix.intrinsics_matrix;
 		
-		cameraFrustumRH(mvMatrix.intrinsics_matrix, cv::Size(render_size[0], render_size[1]), projection, 0.1, 100.0);
+		cameraFrustumRH(mvMatrix.intrinsics_matrix, cv::Size(648, 474), projection, 0.1, 100.0);
+		changeHomography(H, homography);
+		//cout << to_string(homography) << endl;
 		//cout << mvMatrix.intrinsics_matrix << endl;
 		
 		viewMat=glm::mat4(1.0)
@@ -340,10 +344,10 @@ public:
 			vertexArray.SetActive();
 
 			mvMatrix.change3Dpoint(objpoints, input_xyz, M, 4);
-			shader.SetMatrixUniform("MVP", projection*viewMat*M);
+			shader.SetMatrixUniform("MVP", homography*projection*viewMat*M);
 			//shader.SetMatrixUniform("MVP", M*viewMat*projection);
 
-			//cout << glm::to_string(projection*viewMat*M) << endl;
+			//cout << glm::to_string(homography*projection*viewMat*M) << endl;
 
 			//glDrawElements(GL_TRIANGLES, model.varray.size()/8, GL_UNSIGNED_INT, nullptr);
 			glDrawArrays(GL_TRIANGLES, 0, model.varray.size()/8);
@@ -458,6 +462,17 @@ public:
 			0, 0, -2.0 * zfar * znear / (zfar - znear), 0);
 		projMat = projection;
 	}
+	
+	void changeHomography(cv::Mat m_H, glm::mat4& newmat) {
+		glm::mat4 projection(
+			m_H.at<double>(0,0), m_H.at<double>(1, 0), 0, m_H.at<double>(2, 0),
+			m_H.at<double>(0, 1), m_H.at<double>(1, 1), 0, m_H.at<double>(2, 1),
+			0, 0, 1.0, 0,
+			m_H.at<double>(0, 2), m_H.at<double>(1, 2), 0,1);
+
+		newmat = projection;
+	}
+	
 
 private:
 };
