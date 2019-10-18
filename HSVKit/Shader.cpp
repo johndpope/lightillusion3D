@@ -75,7 +75,7 @@ void Shader::SetMatrixUniform(const char* name, const glm::mat4 matrix)
 	//std::cout <<(int) loc << std::endl;
 	//std::cout << loc << std::endl;
 	// Send the matrix data to the uniform
-	glUniformMatrix4fv(loc, 1, GL_TRUE, &matrix[0][0]);
+	glUniformMatrix4fv(loc, 1, GL_FALSE, &matrix[0][0]);
 }
 
 void Shader::SetVectorUniform(const char* name, const glm::vec3 &vector)
