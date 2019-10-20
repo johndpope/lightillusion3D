@@ -165,11 +165,11 @@ public:
 	glm::mat4 homography;
 
 	
-	float objpoints[12] = { -0.0865f,-0.071f,0 ,
-							0.0805f,-0.071f,0,
-							0.0805f,0.0945f,0,
+	float objpoints[12] = { 0.0865f,0.071f,0 ,
+							-0.0805f,0.071f,0,
+							-0.0805f,-0.0945f,0,
 							
-							-0.054f,0.0649f,-0.019f
+							0.054f,-0.0649f,0.019f
 	};
 	
 	/*
@@ -272,9 +272,9 @@ public:
 		//H.at<double>(1, 0) = 0;
 		//mvMatrix.intrinsics_matrix = H * mvMatrix.intrinsics_matrix;
 		
-		//cameraFrustumRH(mvMatrix.intrinsics_matrix, cv::Size(648,474), projection, 0.1, 100.0);
-		cameraFrustumRH(mvMatrix.intrinsics_matrix, cv::Size(render_size[0],render_size[1]), projection, 0.1, 100.0);
-		cout << to_string(projection) << endl;
+		cameraFrustumRH(mvMatrix.intrinsics_matrix, cv::Size(648,474), projection, 0.1, 100.0);
+		//cameraFrustumRH(mvMatrix.intrinsics_matrix, cv::Size(render_size[0],render_size[1]), projection, 0.1, 100.0);
+		//cout << to_string(projection) << endl;
 		//projection = glm::perspective((float)glm::radians(31.68), render_aspect, 0.01f, 100.0f);
 		//cout << to_string(projection) << endl;
 		changeHomography(H, homography);
@@ -349,11 +349,11 @@ public:
 			vertexArray.SetActive();
 
 			mvMatrix.change3Dpoint(objpoints, input_xyz, M, 4);
-			//shader.SetMatrixUniform("MVP", homography * projection*viewMat*M);
-			shader.SetMatrixUniform("MVP",projection*viewMat*M);
+			shader.SetMatrixUniform("MVP", homography * projection*viewMat*M);
+			//shader.SetMatrixUniform("MVP",projection*viewMat*M);
 			//shader.SetMatrixUniform("MVP", M*viewMat*projection);
-			glm::vec4 a = homography * projection * viewMat * M * glm::vec4(0.0, 0.0, 0.0, 1.0);
-			a /= a.a;
+			//glm::vec4 a = homography*projection * viewMat * M * glm::vec4(0.0, 0.0, 0.0, 1.0);
+			//a /= a.a;
 			//cout << glm::to_string(a) << endl;
 
 			//glDrawElements(GL_TRIANGLES, model.varray.size()/8, GL_UNSIGNED_INT, nullptr);
@@ -465,18 +465,19 @@ public:
 
 		/*
 		glm::mat4 projection(
-			-2.0 * fx / w, 0, 0, 0,
-			0, -2.0 * fy / h, 0, 0,
+			2.0 * fx / w, 0, 0, 0,
+			0, 2.0 * fy / h, 0, 0,
 			1.0 - 2.0 * cx / w, -1.0 + 2.0 * cy / h, -(zfar + znear) / (zfar - znear), -1.0,
 			0, 0, -2.0 * zfar * znear / (zfar - znear), 0);
-			
-		*/
+		*/	
+		
+		
 		glm::mat4 projection(
 			4.71976, 0, 0, 0,
 			0, 6.45233, 0, 0,
 			1.0 - 2.0 * cx / w, -1.0 + 2.0 * cy / h, -(zfar + znear) / (zfar - znear), -1.0,
 			0, 0, -2.0 * zfar * znear / (zfar - znear), 0);
-
+		
 		
 		projMat = projection;
 		

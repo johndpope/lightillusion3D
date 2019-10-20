@@ -13,10 +13,10 @@
 
 
 
-#define PROJECTOR
-#define CAMERA
+//#define PROJECTOR
+//#define CAMERA
 const int track_r = 10;
-const int search_r = 64;
+const int search_r = 30;
 
 const float epsilon = 0.2;
 
@@ -42,12 +42,19 @@ const int search_cxy[4][2] = {
 	{ 324 - 128, 237 - 50 },
 };
 */
+/*
 const int search_cxy[4][2] = {
 	{ 324 - 128, 237 + 100 },
 	{ 324 + 128, 237 + 100 },
 	{ 324 + 128, 237 - 130 },
 	{ 324 - 128, 237 - 130 },
 };
+*/
+
+const float search_cxy[4][2] = {221.7f, 320.5f,
+ 419.1f, 320.5f,
+ 419.1f, 125.7f,
+ 261.3f, 162.0f };
 
 int threshold = 230;
 const uint min_m00 = 10;
@@ -457,8 +464,8 @@ inline void mainloop() {
 		cv::Mat KI = (cv::Mat_<double>(3, 3) << proj_width, 0, proj_width / 2.0, 0, proj_height, proj_height / 2.0, 0, 0, 1);
 
 		cv::Mat K = (cv::Mat_<double>(3, 3) << cam_width, 0, cam_width / 2.0, 0, cam_height, cam_height / 2.0, 0, 0, 1);
-		//GLFWkit glfwkit("glfwkit", proj_width, proj_height,KI.inv()*H*K,"horse.obj");
-		GLFWkit glfwkit("glfwkit",cam_width, cam_height,KI.inv()*H*K,"horse.obj");
+		GLFWkit glfwkit("glfwkit", proj_width, proj_height,KI.inv()*H*K,"horse.obj");
+		//GLFWkit glfwkit("glfwkit",cam_width, cam_height,KI.inv()*H*K,"horse.obj");
 		glfwkit.setup();
 
 		//GLkit glkit(proj_width, proj_height);
@@ -500,10 +507,10 @@ inline void mainloop() {
 
 			//cv::imshow("render", dst);
 			//cv::waitKey(1);
-			//glfwkit.render(corner_xyz_cam, &img_render);
-			glfwkit.render(corner_xyz_cam, &img_proj_cam);
+			glfwkit.render(corner_xyz_cam, &img_render);
+			//glfwkit.render(corner_xyz_cam, &img_proj_cam);
 			//cv::flip(img_proj_cam, img_proj_cam, 0);
-			cv::warpPerspective(img_proj_cam, img_render, H, img_render.size());
+			//cv::warpPerspective(img_proj_cam, img_render, H, img_render.size());
 
 
 			//High-speed Rendering without GLFW GUI
@@ -656,7 +663,7 @@ inline void mainloop() {
 		//cv::imshow("img_display_cam", img_display_cam);
 		cv::imshow("img_display_cam", img_display_cam);
 		cv::imshow("img_display_proj", img_display_proj);
-	//	cv::imshow("img_display_proj_cam", img_display_proj_cam);
+		//cv::imshow("img_display_proj_cam", img_display_proj_cam);
 
 		if (abs(circumstance) > 1.3f) {
 			//cout << circumstance << endl;
