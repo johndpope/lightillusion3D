@@ -461,6 +461,7 @@ public:
 			1.0 - 2.0 * cx / w, -1.0 + 2.0 * cy / h, -(zfar + znear) / (zfar - znear), -1.0,
 			0, 0, -2.0 * zfar * znear / (zfar - znear), 0);
 		projMat = projection;
+		
 	}
 	
 	void changeHomography(cv::Mat m_H, glm::mat4& newmat) {
@@ -469,8 +470,9 @@ public:
 			m_H.at<double>(0, 1), m_H.at<double>(1, 1), 0, m_H.at<double>(2, 1),
 			0, 0, 1.0, 0,
 			m_H.at<double>(0, 2), m_H.at<double>(1, 2), 0,1);
-
+		projection = glm::transpose(projection);
 		newmat = projection;
+		
 	}
 	
 

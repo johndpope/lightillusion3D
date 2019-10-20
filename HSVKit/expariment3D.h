@@ -52,12 +52,14 @@ const int search_cxy[4][2] = {
 int threshold = 230;
 const uint min_m00 = 10;
 int mspf = 1;
+
 float homography_proj[4][2] = {
 	{ 512 - 200, 384 + 200 },
 	{ 512 + 200, 384 + 200 },
 	{ 512 + 200, 384 - 200 },
 	{ 512 - 200, 384 - 200 },
 };
+
 int cnt = 0;
 
 const string intrinstFile = "intrinsics.xml";
