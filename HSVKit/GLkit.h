@@ -165,10 +165,11 @@ public:
 	glm::mat4 homography;
 
 	
-	float objpoints[12] = { -0.25f/2.0f,-0.28f/2.0f,0,
-							0.25f/2.0f,-0.28f/2.0f,0,
-							0.25f/2.0f,0.28f/2.0f,0,
-							-0.25f/2.0f,0.28f/2.0f,0
+	float objpoints[12] = { -0.0865f,-0.071f,0 ,
+							0.0805f,-0.071f,0,
+							0.0805f,0.0945f,0,
+							
+							-0.054f,0.0649f,-0.019f
 	};
 	
 	/*
@@ -265,13 +266,17 @@ public:
 		//glEnable(GL_TEXTURE_2D);
 		//projection = glm::ortho(-view_fov * render_aspect, view_fov * render_aspect, -view_fov, view_fov, -50.0f, 50.0f);
 		
-		//projection = glm::perspective((float)glm::radians(31.68), render_aspect, 0.01f, 10.0f);
-		H.at<double>(1, 1) *= -1;
+		
+		//H.at<double>(1, 1) *= -1;
 		//H.at<double>(0, 1) = 0;
 		//H.at<double>(1, 0) = 0;
 		//mvMatrix.intrinsics_matrix = H * mvMatrix.intrinsics_matrix;
 		
-		cameraFrustumRH(mvMatrix.intrinsics_matrix, cv::Size(648, 474), projection, 0.1, 100.0);
+		//cameraFrustumRH(mvMatrix.intrinsics_matrix, cv::Size(648,474), projection, 0.1, 100.0);
+		cameraFrustumRH(mvMatrix.intrinsics_matrix, cv::Size(render_size[0],render_size[1]), projection, 0.1, 100.0);
+		cout << to_string(projection) << endl;
+		//projection = glm::perspective((float)glm::radians(31.68), render_aspect, 0.01f, 100.0f);
+		//cout << to_string(projection) << endl;
 		changeHomography(H, homography);
 		//cout << to_string(homography) << endl;
 		//cout << mvMatrix.intrinsics_matrix << endl;
@@ -344,10 +349,12 @@ public:
 			vertexArray.SetActive();
 
 			mvMatrix.change3Dpoint(objpoints, input_xyz, M, 4);
-			shader.SetMatrixUniform("MVP", homography*projection*viewMat*M);
+			//shader.SetMatrixUniform("MVP", homography * projection*viewMat*M);
+			shader.SetMatrixUniform("MVP",projection*viewMat*M);
 			//shader.SetMatrixUniform("MVP", M*viewMat*projection);
-
-			//cout << glm::to_string(homography*projection*viewMat*M) << endl;
+			glm::vec4 a = homography * projection * viewMat * M * glm::vec4(0.0, 0.0, 0.0, 1.0);
+			a /= a.a;
+			//cout << glm::to_string(a) << endl;
 
 			//glDrawElements(GL_TRIANGLES, model.varray.size()/8, GL_UNSIGNED_INT, nullptr);
 			glDrawArrays(GL_TRIANGLES, 0, model.varray.size()/8);
@@ -447,6 +454,8 @@ public:
 		double cy = camMat.at<double>(1, 2);
 		double w = camSz.width, h = camSz.height;
 
+	
+
 		// éQçl:https://strawlab.org/2011/11/05/augmented-reality-with-OpenGL
 		// With window_coords=="y_down", we have:
 		// [2 * K00 / width,   -2 * K01 / width,   (width - 2 * K02 + 2 * x0) / width,     0]
@@ -454,12 +463,21 @@ public:
 		// [0,                 0,                  (-zfar - znear) / (zfar - znear),       -2 * zfar*znear / (zfar - znear)]
 		// [0,                 0,                  -1,                                     0]
 
-
+		/*
 		glm::mat4 projection(
 			-2.0 * fx / w, 0, 0, 0,
 			0, -2.0 * fy / h, 0, 0,
 			1.0 - 2.0 * cx / w, -1.0 + 2.0 * cy / h, -(zfar + znear) / (zfar - znear), -1.0,
 			0, 0, -2.0 * zfar * znear / (zfar - znear), 0);
+			
+		*/
+		glm::mat4 projection(
+			4.71976, 0, 0, 0,
+			0, 6.45233, 0, 0,
+			1.0 - 2.0 * cx / w, -1.0 + 2.0 * cy / h, -(zfar + znear) / (zfar - znear), -1.0,
+			0, 0, -2.0 * zfar * znear / (zfar - znear), 0);
+
+		
 		projMat = projection;
 		
 	}

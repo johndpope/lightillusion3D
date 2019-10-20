@@ -29,7 +29,7 @@ public:
 			imgp.push_back(tmp2);
 		}
 		//cout << endl;
-		cv::Mat distortion = (cv::Mat_<double>(4, 1) << 0, 0, 0, 0);
+		//cv::Mat distortion = (cv::Mat_<double>(4, 1) << 0, 0, 0, 0);
 		cv::solvePnP(objp, imgp, intrinsics_matrix,distortion_coeffs, rvec, tvec);
 		//cout << rvec << tvec << endl;
 		
@@ -38,21 +38,28 @@ public:
 		
 		R = R.t();  // rotation of inverse
 		//cout << R << endl;
-		
-		//tvec = -R * tvec;
-		cout << tvec << endl;
+		//
+		cv::Mat tveci = -R * tvec;
+		//cout << tvec << endl;
+		//tvec.at<double>(2)*=1.0;
+		//tvec.at<double>(1) *=-1.0;
+		//cout <<  -R * tvec << endl;
+		//computeAnglesFromMatrix(R);
+
 		cv::Mat T=cv::Mat::eye(4, 4, R.type()); // T is 4x4
 		//cv::Mat Tgl(4, 4, R.type()); // T is 4x4
 
 		T(cv::Range(0, 3), cv::Range(0, 3)) = R * 1; // copies R into T
-		T(cv::Range(0, 3), cv::Range(3, 4)) = tvec * 1;
+		T(cv::Range(0, 3), cv::Range(3, 4)) = tveci * 1;
 		
 
+		//T = T.inv();
+		
 		
 	
 		fromCV2GLM(T, dst);
 		//cout << glm::to_string( dst) << endl;
-		
+		//cout << to_string(dst) << endl;
 		glm::mat4 RotX = glm::mat4(1, 0, 0, 0,
 			0, -1, 0, 0,
 			0, 0, -1, 0,
@@ -60,7 +67,7 @@ public:
 
 		//dst = dst*RotX;
 		//dst = glm::mat4(1.0f);
-		//dst = glm::translate(glm::mat4(1.0f), glm::vec3((float)tvec.at<double>(0,0), (float)tvec.at<double>(1,0), (float)tvec.at<double>(2,0)));
+		//dst = glm::translate(glm::mat4(1.0f), glm::vec3((float)tvec.at<double>(0,0), (float)tvec.at<double>(1,0), -(float)tvec.at<double>(2,0)));
 		//dst = glm::translate(dst, glm::vec3(0.0f,0.0f,-1.0f));
 		//cout << to_string(dst) << endl;
 		
@@ -83,6 +90,31 @@ public:
 		
 		//memcpy(glm::value_ptr(glmmat), cvmat.data, 16 * sizeof(float));
 		//glmmat = glm::transpose(glmmat);
+	}
+
+	void computeAnglesFromMatrix(
+		cv::Mat R
+		
+	) {
+		double PI = 3.14159265359;
+		double threshold = 0.001;
+		double angle_x, angle_y, angle_z;
+		if (abs(R.at<double>(2, 1) - 1.0) < threshold) { // R(2,1) = sin(x) = 1‚Ì
+			angle_x = PI / 2;
+			angle_y = 0;
+			angle_z = atan2(R.at<double>(1, 0), R.at<double>(0, 0));
+		}
+		else if (abs(R.at<double>(2, 1) + 1.0) < threshold) { // R(2,1) = sin(x) = -1‚Ì
+			angle_x = -PI / 2;
+			angle_y = 0;
+			angle_z = atan2(R.at<double>(1, 0), R.at<double>(0, 0));
+		}
+		else {
+			angle_x = asin(R.at<double>(2, 1));
+			angle_y = atan2(-R.at<double>(2, 0), R.at<double>(2, 2));
+			angle_z = atan2(-R.at<double>(0, 1), R.at<double>(1, 1));
+		}
+		cout << angle_x*(180.0)/PI << " " << angle_y * (180.0) / PI << " " << angle_z* (180.0) / PI << endl;
 	}
 
 };

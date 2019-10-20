@@ -23,7 +23,7 @@ int main() {
 		
 	}
 	*/
-	
+	//calibrate(10, 0.5f, 1.0f, 7, 10);
 	//cv::waitKey(0);
 	//cv::Size size = cv::Size(400, 400);
 
