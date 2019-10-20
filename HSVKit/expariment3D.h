@@ -464,7 +464,10 @@ inline void mainloop() {
 		cv::Mat KI = (cv::Mat_<double>(3, 3) << proj_width, 0, proj_width / 2.0, 0, proj_height, proj_height / 2.0, 0, 0, 1);
 
 		cv::Mat K = (cv::Mat_<double>(3, 3) << cam_width, 0, cam_width / 2.0, 0, cam_height, cam_height / 2.0, 0, 0, 1);
+		
 		GLFWkit glfwkit("glfwkit", proj_width, proj_height,KI.inv()*H*K,"horse.obj");
+		//cout << (KI.inv() * H * K)*cv::Mat(cv::Vec3d(0.0, 0.0, 1.0))<< endl;
+		//cout << H*cv::Mat(cv::Vec3d(324, 247, 1.0))<< endl;
 		//GLFWkit glfwkit("glfwkit",cam_width, cam_height,KI.inv()*H*K,"horse.obj");
 		glfwkit.setup();
 
@@ -492,7 +495,7 @@ inline void mainloop() {
 		cv::Mat src2;
 		int count = 0;
 
-		cv::Mat dst = cv::Mat(1024, 1024, CV_8UC1, cv::Scalar(0.0f));
+		//:cv::Mat dst = cv::Mat(1024, 1024, CV_8UC1, cv::Scalar(0.0f));
 
 
 		while (thread_process_flag) {
@@ -509,7 +512,7 @@ inline void mainloop() {
 			//cv::waitKey(1);
 			glfwkit.render(corner_xyz_cam, &img_render);
 			//glfwkit.render(corner_xyz_cam, &img_proj_cam);
-			//cv::flip(img_proj_cam, img_proj_cam, 0);
+			//cv::flip(img_render, img_render, 0);
 			//cv::warpPerspective(img_proj_cam, img_render, H, img_render.size());
 
 
@@ -658,9 +661,11 @@ inline void mainloop() {
 				mspf = 33; break;
 			}
 		}
-		img_render.copyTo(img_display_proj);
+		//img_render.copyTo(img_display_proj);
+		cv::cvtColor(img_render, img_display_proj, cv::COLOR_GRAY2RGB);
 		//img_proj_cam.copyTo(img_display_proj_cam);
 		//cv::imshow("img_display_cam", img_display_cam);
+		cv::circle(img_display_proj, cv::Point(486, 439), 10, cv::Scalar(200, 0, 0));
 		cv::imshow("img_display_cam", img_display_cam);
 		cv::imshow("img_display_proj", img_display_proj);
 		//cv::imshow("img_display_proj_cam", img_display_proj_cam);

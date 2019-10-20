@@ -71,7 +71,7 @@ void Shader::SetActive()
 void Shader::SetMatrixUniform(const char* name, const glm::mat4 matrix)
 {
 	// Find the uniform by this name
-	GLuint loc = glGetUniformLocation(mShaderProgram, "MVP");
+	GLuint loc = glGetUniformLocation(mShaderProgram, name);
 	//std::cout <<(int) loc << std::endl;
 	//std::cout << loc << std::endl;
 	// Send the matrix data to the uniform
