@@ -71,7 +71,8 @@ public:
 
 		T(cv::Range(0, 3), cv::Range(0, 3)) = R * 1; // copies R into T
 		T(cv::Range(0, 3), cv::Range(3, 4)) = tvec * 1;
-		
+		tvec.at<double>(1) *= -1.0;
+		tvec.at<double>(0) *= -1.0;
 
 		//T = T.inv();
 		
