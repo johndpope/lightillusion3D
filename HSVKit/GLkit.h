@@ -353,11 +353,10 @@ public:
 				0, -1, 0, 0,
 				0, 0, 1, 0,
 				0, 0, 0, 1);
-			shader.SetMatrixUniform("MVP", homography*RotX*projection*viewMat*M);
-			//cout << to_string(homography * RotX*projection) << endl;
+			shader.SetMatrixUniform("MVP", homography *RotX* projection*viewMat*M);
 			//shader.SetMatrixUniform("MVP",projection*viewMat*M);
 			//shader.SetMatrixUniform("MVP", M*viewMat*projection);
-			//glm::vec4 a = homography*RotX*projection * viewMat * M * glm::vec4(0.0, 0.0, 0.0, 1.0);
+			//glm::vec4 a = homography*projection * viewMat * M * glm::vec4(0.0, 0.0, 0.0, 1.0);
 			//a /= a.a;
 			//cout << glm::to_string(a) << endl;
 
@@ -468,20 +467,21 @@ public:
 		// [0,                 0,                  (-zfar - znear) / (zfar - znear),       -2 * zfar*znear / (zfar - znear)]
 		// [0,                 0,                  -1,                                     0]
 
-		/*
+		
 		glm::mat4 projection(
 			2.0 * fx / w, 0, 0, 0,
 			0, 2.0 * fy / h, 0, 0,
 			1.0 - 2.0 * cx / w, -1.0 + 2.0 * cy / h, -(zfar + znear) / (zfar - znear), -1.0,
 			0, 0, -2.0 * zfar * znear / (zfar - znear), 0);
-		*/	
 			
+		
+		/*
 		glm::mat4 projection(
 			4.71976, 0, 0, 0,
 			0, 6.45233, 0, 0,
 			1.0 - 2.0 * cx / w, -1.0 + 2.0 * cy / h, -(zfar + znear) / (zfar - znear), -1.0,
 			0, 0, -2.0 * zfar * znear / (zfar - znear), 0);
-		
+		*/
 		
 		projMat = projection;
 		
@@ -492,8 +492,8 @@ public:
 			m_H.at<double>(0,0), m_H.at<double>(1, 0), 0, m_H.at<double>(2, 0),
 			m_H.at<double>(0, 1), m_H.at<double>(1, 1), 0, m_H.at<double>(2, 1),
 			0, 0, 1.0, 0,
-			m_H.at<double>(0, 2), m_H.at<double>(1, 2), 0,m_H.at<double>(2,2));
-		projection = glm::transpose(projection);
+			m_H.at<double>(0, 2), m_H.at<double>(1, 2), 0,1);
+		//projection = glm::transpose(projection);
 		newmat = projection;
 		
 	}

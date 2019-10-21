@@ -45,21 +45,24 @@ public:
 		*/
 		//cout << endl;
 		//cv::Mat distortion = (cv::Mat_<double>(4, 1) << 0, 0, 0, 0);
-		cv::solvePnPRansac(objp, imgp, intrinsics_matrix, distortion_coeffs, rvec, tvec, true);
-		//cout << rvec << tvec << endl;
+		cv::solvePnP(objp, imgp, intrinsics_matrix, distortion_coeffs, rvec, tvec, true);
+		//cout << tvec << endl;
 		//rvec=(cv::Mat_<double>(3, 1) << 0, 0, 0);
 		cv::Mat R;
+		rvec.at<double>(1) *= -1.0;
+		rvec.at<double>(0) *= -1.0;
 		cv::Rodrigues(rvec, R);
-		
-		R = R.t();  // rotation of inverse
+		rvec.at<double>(1) *= -1.0;
+		rvec.at<double>(0) *= -1.0;
+		//R = R.t();  // rotation of inverse
 		//cv::Rodrigues(R,rvec);
 		//cout << rvec << endl;
 		//cout << R << endl;
 		//
 		cv::Mat tveci = -R * tvec;
-		//cout << tveci << endl;
-		//tvec.at<double>(2)*=1.0;
-		//tvec.at<double>(1) *=-1.0;
+		cout << tveci << endl;
+		tvec.at<double>(1)*=-1.0;
+		tvec.at<double>(0) *=-1.0;
 		//cout <<  -R * tvec << endl;
 		//computeAnglesFromMatrix(R);
 
@@ -67,8 +70,9 @@ public:
 		//cv::Mat Tgl(4, 4, R.type()); // T is 4x4
 
 		T(cv::Range(0, 3), cv::Range(0, 3)) = R * 1; // copies R into T
-		T(cv::Range(0, 3), cv::Range(3, 4)) = tveci * 1;
-		
+		T(cv::Range(0, 3), cv::Range(3, 4)) = tvec * 1;
+		tvec.at<double>(1) *= -1.0;
+		tvec.at<double>(0) *= -1.0;
 
 		//T = T.inv();
 		
@@ -78,11 +82,11 @@ public:
 		//cout << glm::to_string( dst) << endl;
 		//cout << to_string(dst) << endl;
 		glm::mat4 RotX = glm::mat4(1, 0, 0, 0,
-			0, 1, 0, 0,
+			0, -1, 0, 0,
 			0, 0, -1, 0,
 			0, 0, 0, 1);
 
-		//dst = dst*RotX;
+		//dst =dst*RotX;
 		//dst = glm::mat4(1.0f);
 		//dst = glm::translate(glm::mat4(1.0f), glm::vec3(-(float)tvec.at<double>(0,0), -(float)tvec.at<double>(1,0), -(float)tvec.at<double>(2,0)));
 		//dst = glm::translate(dst, glm::vec3(0.0f,0.0f,-1.0f));
