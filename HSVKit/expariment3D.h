@@ -12,9 +12,8 @@
 //à íuçáÇÌÇπ
 
 
-
 //#define PROJECTOR
-//#define CAMERA
+#define CAMERA
 const int track_r = 10;
 const int search_r = 30;
 
@@ -333,7 +332,7 @@ void getCorners(cv::Mat& img, cv::Mat& img_display, float* corners, bool* flags,
 
 inline void mainloop() {
 
-	cout << CV_VERSION << endl;
+	//cout << CV_VERSION << endl;
 
 #pragma region Imread
 	
