@@ -333,6 +333,8 @@ void getCorners(cv::Mat& img, cv::Mat& img_display, float* corners, bool* flags,
 
 inline void mainloop() {
 
+	cout << CV_VERSION << endl;
+
 #pragma region Imread
 	
 

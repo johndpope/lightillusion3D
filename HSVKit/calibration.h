@@ -3,7 +3,6 @@
 #include<opencv2/opencv.hpp>
 #include<iostream>
 
-
 using namespace std;
 
 void calibrate(int n_boards = 0, float image_sf = 0.5f, float delay = 1.f, int board_h = 0, int board_w = 0) {

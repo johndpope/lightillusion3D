@@ -5,12 +5,10 @@
 #include"GLFWkit.h"
 #include"expariment3D.h"
 //#include"EstimateOffset.h"
-//#include"exparimentLR.h"
-//#include"exparimentSpring.h"
-//#include"exparimentPurin.h"
-//#include"exparimentLena.h"
+
 int main() {
 	mainloop();
+	//calibrate(10, 1.0f, 1.0f, 7, 10);
 	/*
 	GLFWkit glfwkit("glfwkit", 1024, 768,"horse.obj");
 	glfwkit.setup();
