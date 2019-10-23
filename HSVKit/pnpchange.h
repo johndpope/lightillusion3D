@@ -60,7 +60,7 @@ public:
 		//cout << R << endl;
 		//
 		cv::Mat tveci = -R * tvec;
-		cout << tveci << endl;
+		//cout << tveci << endl;
 		tvec.at<double>(1)*=-1.0;
 		tvec.at<double>(0) *=-1.0;
 		//cout <<  -R * tvec << endl;

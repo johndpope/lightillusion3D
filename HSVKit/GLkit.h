@@ -353,7 +353,8 @@ public:
 				0, -1, 0, 0,
 				0, 0, 1, 0,
 				0, 0, 0, 1);
-			shader.SetMatrixUniform("MVP", homography *RotX* projection*viewMat*M);
+			//shader.SetMatrixUniform("MVP", homography *RotX* projection*viewMat*M);
+			shader.SetMatrixUniform("MVP", RotX * projection * viewMat * M);
 			//shader.SetMatrixUniform("MVP",projection*viewMat*M);
 			//shader.SetMatrixUniform("MVP", M*viewMat*projection);
 			//glm::vec4 a = homography*projection * viewMat * M * glm::vec4(0.0, 0.0, 0.0, 1.0);
@@ -493,7 +494,7 @@ public:
 			m_H.at<double>(0, 1), m_H.at<double>(1, 1), 0, m_H.at<double>(2, 1),
 			0, 0, 1.0, 0,
 			m_H.at<double>(0, 2), m_H.at<double>(1, 2), 0,1);
-		//projection = glm::transpose(projection);
+		projection = glm::transpose(projection);
 		newmat = projection;
 		
 	}
