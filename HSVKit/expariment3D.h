@@ -13,7 +13,7 @@
 
 
 //#define PROJECTOR
-//#define CAMERA
+#define CAMERA
 const int track_r = 10;
 const int search_r = 30;
 
