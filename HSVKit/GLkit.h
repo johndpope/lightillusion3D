@@ -353,8 +353,8 @@ public:
 				0, -1, 0, 0,
 				0, 0, 1, 0,
 				0, 0, 0, 1);
-			//shader.SetMatrixUniform("MVP", homography *RotX* projection*viewMat*M);
-			shader.SetMatrixUniform("MVP", RotX * projection * viewMat * M);
+			shader.SetMatrixUniform("MVP", homography *RotX* projection*viewMat*M);
+			//shader.SetMatrixUniform("MVP", RotX * projection * viewMat * M);
 			//shader.SetMatrixUniform("MVP",projection*viewMat*M);
 			//shader.SetMatrixUniform("MVP", M*viewMat*projection);
 			//glm::vec4 a = homography*projection * viewMat * M * glm::vec4(0.0, 0.0, 0.0, 1.0);
