@@ -7,8 +7,12 @@
 //#include"EstimateOffset.h"
 
 int main() {
-	mainloop();
+	//mainloop();
 	//calibrate(10, 1.0f, 1.0f, 7, 10);
+
+	Calibration calib;
+	calib.Load_matrix("intrinsics.xml", 648, 474);
+	calib.calibrate_projector(7, 10, 0.25f);
 	/*
 	GLFWkit glfwkit("glfwkit", 1024, 768,"horse.obj");
 	glfwkit.setup();

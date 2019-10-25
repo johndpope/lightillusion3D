@@ -637,7 +637,7 @@ inline void mainloop() {
 #ifdef CAMERA
 			cam.captureFrame(img_cam.data);
 			//Ç±Ç±ÇŸÇÒÇ∆Ç…ïKóvÅH
-			calib.Calibrate(img_cam, img_cam);
+			calib.Undistort(img_cam, img_cam);
 #endif
 			getHomography(img_cam, homography);
 			proj_calibration_flag = false;
