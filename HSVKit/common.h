@@ -43,6 +43,7 @@
 //OpenCV
 #include <opencv2/opencv.hpp>
 #include<opencv2/imgproc/imgproc.hpp>
+#include<opencv2/highgui/highgui.hpp>
 #pragma comment(lib, "opencv_world401" SUFFIX_EXT)
 
 //OpenGL

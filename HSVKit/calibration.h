@@ -2,14 +2,44 @@
 
 #include<opencv2/opencv.hpp>
 #include<iostream>
-
+#include<fstream>
 using namespace std;
 
+
+//#define CAMERA
+//#define PROJECTOR
 enum CaptureMode {
 	LIGHT = 0,
 	NOPROJ = 1,
 	ONPROJ = 2,
 };
+
+struct CheckerBoard {
+	int w;
+	int h;
+	int size;
+	cv::Point center;
+};
+
+void checkerMake(int board_w, int board_h, int size, cv::Mat& dst) {
+	int w = board_w * size;
+	int h = board_h * size;
+	dst = cv::Mat::zeros(h, w, CV_8UC1);
+
+	for (int i = 0; i < board_w; i++) {
+		for (int j = 0; j < board_h; j++) {
+			for (int ii = 0; ii < size; ii++) {
+				for (int jj = 0; jj < size; jj++) {
+					if ((i + j) % 2 == 0) {
+						dst.at<uchar>(j * size + jj, i * size + ii) = 255;
+
+					}
+
+				}
+			}
+		}
+	}
+}
 
 void calibrate(int n_boards = 0, float image_sf = 0.5f, float delay = 1.f, int board_h = 0, int board_w = 0) {
 	int board_n = board_w * board_h;
@@ -143,9 +173,26 @@ private:
 	int proj_chess_w = 7;
 	int proj_chess_h = 7;
 
-	cv::Mat img_proj;
 
+	CheckerBoard checkerBoard;
+	int proj_width;
+	int proj_height;
+	cv::Mat img_render;
+
+	bool thread_capture_flag = true;
+
+\
+	bool thread_process_flag = true;
+
+	bool thread_project_flag = true;
 public:
+
+	Calibration() {
+		checkerBoard.w = proj_chess_w;
+		checkerBoard.h = proj_chess_h;
+		checkerBoard.size = 30;
+		checkerBoard.center = cv::Point(1024 / 2, 768 / 2);
+	}
 
 	void Load_matrix(string fileName, int image_w, int image_h) {
 		cv::FileStorage fs(fileName, cv::FileStorage::READ);
@@ -211,9 +258,45 @@ public:
 		}
 	}
 
+	bool checkFileExistence(const std::string& str)
+	{
+		std::ifstream ifs(str);
+		return ifs.is_open();
+	}
 
+	static void onTrackbarChanged(int num, void* userdata) {
+
+		CheckerBoard c = static_cast<Calibration*>(userdata)->checkerBoard;
+		if (c.w * c.size > static_cast<Calibration*>(userdata)->proj_width || c.h * c.size > static_cast<Calibration*>(userdata)->proj_height) {
+			printf("error! size is larger than winsize!\n");
+			return;
+		}
+		cv::Mat d;
+
+
+		static_cast<Calibration*>(userdata)->img_render = cv::Mat(static_cast<Calibration*>(userdata)->proj_height, static_cast<Calibration*>(userdata)->proj_width, CV_8UC1,cv::Scalar::all(0));
+		checkerMake(c.w, c.h, c.size, d);
+		c.center.x = min(max(c.center.x,c.w * c.size / 2+1), static_cast<Calibration*>(userdata)->proj_width - c.w * c.size / 2);
+		c.center.y = min(max(c.center.y, c.h * c.size / 2+1), static_cast<Calibration*>(userdata)->proj_height - c.h * c.size / 2);
+		//cout << c.center.x << " " << c.center.y << endl;
+		cv::setTrackbarPos("中心x座標", "checkerBoard", c.center.x);
+		cv::setTrackbarPos("中心y座標", "checkerBoard", c.center.y);
+
+		static_cast<Calibration*>(userdata)->thread_capture_flag = false;
+		static_cast<Calibration*>(userdata)->thread_process_flag = false;
+		static_cast<Calibration*>(userdata)->thread_project_flag = false;
+		
+		d.copyTo(static_cast<Calibration*>(userdata)->img_render(cv::Rect(c.center.x - c.w * c.size / 2-1, c.center.y - c.h * c.size / 2-1, c.w * c.size, c.h * c.size)));
+
+		static_cast<Calibration*>(userdata)->thread_capture_flag = true;
+		static_cast<Calibration*>(userdata)->thread_process_flag = true;
+		static_cast<Calibration*>(userdata)->thread_project_flag = true;
+
+	}
 
 	void corner_detect() {
+
+		cv::Mat cam_noprojd,cam_onprojd;
 		vector < cv::Point2d> corners;
 		if (!cv::findChessboardCorners(cam_light, board_sz, corners)) {
 			printf("Failed to find chessboardcorners in LIGHT...\n");
@@ -230,7 +313,9 @@ public:
 
 
 		cv::Mat proj_chess;
-		cv::absdiff(cam_onproj, cam_noproj, proj_chess);
+		Undistort(cam_onproj, cam_onprojd);
+		Undistort(cam_noproj, cam_noprojd);
+		cv::absdiff(cam_onprojd, cam_noprojd, proj_chess);
 
 		cv::Size chess_sz = cv::Size(proj_chess_w, proj_chess_h);
 		if (!cv::findChessboardCorners(proj_chess, chess_sz, corners)) {
@@ -251,15 +336,106 @@ public:
 			v.push_back(x);
 		}
 
-		if (!cv::findChessboardCorners(img_proj, chess_sz, corners)) {
+		if (!cv::findChessboardCorners(img_render, chess_sz, corners)) {
 			printf("Failed to find chessboardcorners in PROJIMG...\n");
 			return;
 		}
 		objPoints.push_back(v);
 		imgPoints.push_back(corners);
+
+		cv::imwrite("Calibration/img_cam/" + to_string(pic_count) + ".png", cam_light);
+		cv::imwrite("Calibration/img_proj/" + to_string(pic_count) + ".png", proj_chess);
+		cv::imwrite("Calibration/img_render/" + to_string(pic_count) + ".png", img_render);
 		pic_count++;
 
-		printf("Succeed in %d corner detect!\n", pic_count);
+		printf("Succeed in %d th corner detect!\n", pic_count);
+		
+		
+	}
+
+	void calibrate_projector_read() {
+		while (1) {
+			string cam = "Calibration/img_cam/" + to_string(pic_count) + ".png";
+			string proj = "Calibration/img_cam/" + to_string(pic_count) + ".png";
+			string render = "Calibration/img_render/" + to_string(pic_count) + ".png";
+			if (!checkFileExistence(cam) || !checkFileExistence(proj)||!checkFileExistence(render)) {
+				printf("File dosen't exist\n");
+				break;
+			}
+			pic_count++;
+
+			cv::Mat proj_chess;
+			cam_light=cv::imread(cam, 0);
+			proj_chess = cv::imread(proj, 0);
+			img_render= cv::imread(render, 0);
+			Undistort(proj_chess, proj_chess);
+
+			vector < cv::Point2d> corners;
+			if (!cv::findChessboardCorners(cam_light, board_sz, corners)) {
+				printf("Failed to find chessboardcorners in LIGHT...\n");
+				continue;
+			}
+
+			//平面式
+			cv::Mat rvec, tvec;
+			cv::solvePnP(boardPoints, corners, cam_matrix, cam_distortion, rvec, tvec);
+			cv::Mat n = (cv::Mat_<double>(3, 1) << 0.0, 0.0, 1.0);
+			cv::Mat R;
+			cv::Rodrigues(rvec, R);
+			n = R * n;
+
+			cv::Size chess_sz = cv::Size(proj_chess_w, proj_chess_h);
+			if (!cv::findChessboardCorners(proj_chess, chess_sz, corners)) {
+				printf("Failed to find chessboardcorners in PROJ...\n");
+				continue;
+			}
+
+			cv::Mat cinv = cam_matrix.inv();
+			vector<cv::Point3d> v;
+			//平面逆投影
+			for (int i = 0; i < corners.size(); i++) {
+				cv::Mat tmp = (cv::Mat_<double>(3, 1) << corners[i].x, corners[i].y, 1.0f);
+				tmp = cinv * tmp;
+
+				double t = (n.dot(tvec)) / (n.dot(tmp));
+				tmp = t * tmp;
+				cv::Point3d x = cv::Point3d(tmp.at<double>(0), tmp.at<double>(1), tmp.at<double>(2));
+				v.push_back(x);
+			}
+
+			if (!cv::findChessboardCorners(img_render, chess_sz, corners)) {
+				printf("Failed to find chessboardcorners in PROJIMG...\n");
+				continue;
+			}
+
+			objPoints.push_back(v);
+			imgPoints.push_back(corners);
+		}
+
+		if (pic_count > 0) {
+			cout << "\n\n*** CALIBLATING CAMERA...\n" << endl;
+			int proj_width = 1024;
+			int proj_height = 768;
+			cv::Mat intrinsic_matrix, cam_distortion;
+			double err = cv::calibrateCamera(
+				objPoints,
+				imgPoints,
+				cv::Size(proj_width, proj_height),
+				intrinsic_matrix,
+				cam_distortion,
+				cv::noArray(),
+				cv::noArray(),
+				cv::CALIB_ZERO_TANGENT_DIST | cv::CALIB_FIX_PRINCIPAL_POINT);
+
+			cout << "*** DONE! \n\nReprojection error is " << err <<
+				" \nStoring Intrinsics.xml \n\n";
+
+			cv::FileStorage fs("intrinsics_proj.xml", cv::FileStorage::WRITE);
+
+			fs << "image_width" << image_size.width << "image_height" << image_size.height << "camera_matrix" <<
+				intrinsic_matrix << "cam_distortion" << cam_distortion;
+			fs.release();
+		}
 
 	}
 
@@ -268,12 +444,18 @@ public:
 	2キーでoffblackのキャプチャ
 	3キーでプロジェクターのキャプチャ
 	プロジェクターとライトのオンオフに注意！
+	board_sizeはチェスボードの間隔をメートル単位で指定
 	*/
-	void calibrate_projector(int board_h = 0, int board_w = 0,float board_size=0) {
+	void calibrate_projector(int board_h = 0, int board_w = 0,double board_size=0,bool read=false) {
+
+		if (read) {
+			calibrate_projector_read();
+			return;
+		}
 
 		for (int j = 0; j < board_h; j++) {
 			for (int i = 0; i < board_w; i++) {
-				cv::Point3d tmp = cv::Point3d(-(float)i * board_size, (float)j * board_size, 0.0f);
+				cv::Point3d tmp = cv::Point3d(-(double)i * board_size, (double)j * board_size, 0.0);
 				boardPoints.push_back(tmp);
 			}
 		}
@@ -309,13 +491,13 @@ public:
 
 		#pragma region HSP Open
 
-				int proj_width = 1024;
-				int proj_height = 768;
+				proj_width = 1024;
+				proj_height = 768;
 				int proj_fps = 1000;
 				int proj_num_buffer = 1;
 
 
-				img_proj = cv::Mat(proj_height, proj_width, CV_8UC1, cv::Scalar::all(255));
+				cv::Mat  img_proj = cv::Mat(proj_height, proj_width, CV_8UC1, cv::Scalar::all(255));
 				cv::Mat img_display_proj = cv::Mat(proj_height, proj_width, CV_8UC3);
 				cv::Mat img_proj_offblack = cv::Mat(proj_height, proj_width, CV_8UC1, cv::Scalar::all(0));
 				cv::Mat img_proj_homography = cv::Mat(proj_height, proj_width, CV_8UC1, cv::Scalar::all(0));
@@ -332,10 +514,19 @@ public:
 		#pragma endregion 
 		#endif
 
+#pragma region TrackBar
+				cv::namedWindow("checkerBoard");
+				cv::createTrackbar("横の個数", "checkerBoard", &checkerBoard.w,20,this->onTrackbarChanged,(void*)this);
+				cv::createTrackbar("縦の個数", "checkerBoard", &checkerBoard.h,20, this->onTrackbarChanged, (void*)this);
+				cv::createTrackbar("チェックのサイズ", "checkerBoard", &checkerBoard.size,100, this->onTrackbarChanged,(void*)this);
+				cv::createTrackbar("中心x座標", "checkerBoard", &checkerBoard.center.x,1024, this->onTrackbarChanged, (void*)this);
+				cv::createTrackbar("中心y座標", "checkerBoard", &checkerBoard.center.y,768, this->onTrackbarChanged, (void*)this);
+#pragma endregion
+
 
 		#pragma region GLFW kit
 				//cv::Mat img_render = (cv::Mat(proj_height, proj_width, CV_8UC3, cv::Scalar::all(255)));
-				cv::Mat img_render = (cv::Mat(proj_height, proj_width, CV_8UC1, cv::Scalar::all(255)));
+				img_render = (cv::Mat(proj_height, proj_width, CV_8UC1, cv::Scalar::all(255)));
 		#pragma endregion
 
 
@@ -372,7 +563,7 @@ public:
 					while (thread_process_flag) {
 						WaitForSingleObject(event_capture, INFINITE);
 
-
+						//img_render.copyTo(img_proj);
 						thread_process_cnt++;
 						SetEvent(event_process);
 					}
@@ -492,7 +683,7 @@ public:
 						}
 						else {
 							img_cam.copyTo(cam_noproj);
-							Undistort(cam_noproj,cam_noproj);
+							///Undistort(cam_noproj,cam_noproj);
 							capMode = CaptureMode::ONPROJ;
 							proj_offblack_flag = false;
 							printf("NOPROJ is captured. Next ONPROJ...\n");
@@ -508,7 +699,7 @@ public:
 						}
 						else {
 							img_cam.copyTo(cam_onproj);
-							Undistort(cam_onproj, cam_onproj);
+							//Undistort(cam_onproj, cam_onproj);
 							capMode = CaptureMode::LIGHT;
 							proj_offblack_flag = true;
 							printf("ONPROJ is captured. Next LIGHT...\n");
@@ -516,7 +707,7 @@ public:
 							corner_detect();
 						}
 					}
-					
+					img_render.copyTo(img_proj);
 					img_render.copyTo(img_display_proj);
 					//cv::cvtColor(img_render, img_display_proj, cv::COLOR_GRAY2RGB);
 					//cv::imshow("img_display_cam", img_display_cam);

@@ -31,3 +31,4 @@ void checkerMake(int width, int height,int wstride,int hstride,cv::Mat &mat1,cv:
 	cv::cvtColor(mat1, mat1, cv::COLOR_RGB2GRAY);
 	cv::cvtColor(mat2, mat2, cv::COLOR_RGB2GRAY);
 }
+
