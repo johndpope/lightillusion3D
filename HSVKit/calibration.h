@@ -101,7 +101,7 @@ void calibrate(int n_boards = 0, float image_sf = 0.5f, float delay = 1.f, int b
 				opts[j] = cv::Point3f((float)(j / board_w), (float)(j % board_w), 0.f);
 			}
 
-			cout << "Collected our " << (int)image_points.size() << " of " << n_boards << " needed chessboard images " << endl;
+			std::cout << "Collected our " << (int)image_points.size() << " of " << n_boards << " needed chessboard images " << std::endl;
 
 		}
 		cv::imshow("Calibration", image);
@@ -117,9 +117,9 @@ void calibrate(int n_boards = 0, float image_sf = 0.5f, float delay = 1.f, int b
 
 	cv::destroyWindow("Calibration");
 
-	cout << object_points[0].size() << endl;
+	std::cout << object_points[0].size() << std::endl;
 	
-	cout << "\n\n*** CALIBLATING CAMERA...\n" << endl;
+	std::cout << "\n\n*** CALIBLATING CAMERA...\n" << std::endl;
 
 	cv::Mat intrinsic_matrix, cam_distortion;
 	double err = cv::calibrateCamera(
@@ -132,7 +132,7 @@ void calibrate(int n_boards = 0, float image_sf = 0.5f, float delay = 1.f, int b
 		cv::noArray(),
 		cv::CALIB_ZERO_TANGENT_DIST | cv::CALIB_FIX_PRINCIPAL_POINT);
 
-	cout << "*** DONE! \n\nReprojection error is " << err <<
+	std::cout << "*** DONE! \n\nReprojection error is " << err <<
 		" \nStoring Intrinsics.xml \n\n";
 
 	cv::FileStorage fs("intrinsics.xml", cv::FileStorage::WRITE);
@@ -181,10 +181,11 @@ private:
 
 	bool thread_capture_flag = true;
 
-\
 	bool thread_process_flag = true;
 
 	bool thread_project_flag = true;
+	
+	std::FILE* fp;
 public:
 
 	Calibration() {
@@ -278,7 +279,7 @@ public:
 		checkerMake(c.w, c.h, c.size, d);
 		c.center.x = min(max(c.center.x,c.w * c.size / 2+1), static_cast<Calibration*>(userdata)->proj_width - c.w * c.size / 2);
 		c.center.y = min(max(c.center.y, c.h * c.size / 2+1), static_cast<Calibration*>(userdata)->proj_height - c.h * c.size / 2);
-		//cout << c.center.x << " " << c.center.y << endl;
+		//std::cout << c.center.x << " " << c.center.y << std::endl;
 		cv::setTrackbarPos("中心x座標", "checkerBoard", c.center.x);
 		cv::setTrackbarPos("中心y座標", "checkerBoard", c.center.y);
 
@@ -317,7 +318,7 @@ public:
 		Undistort(cam_noproj, cam_noprojd);
 		cv::absdiff(cam_onprojd, cam_noprojd, proj_chess);
 
-		cv::Size chess_sz = cv::Size(proj_chess_w, proj_chess_h);
+		cv::Size chess_sz = cv::Size(checkerBoard.w-1, checkerBoard.h-1);
 		if (!cv::findChessboardCorners(proj_chess, chess_sz, corners)) {
 			printf("Failed to find chessboardcorners in PROJ...\n");
 			return;
@@ -343,6 +344,8 @@ public:
 		objPoints.push_back(v);
 		imgPoints.push_back(corners);
 
+		fprintf(fp, "%d\n", checkerBoard.w-1);
+		fprintf(fp, "%d\n", checkerBoard.h-1);
 		cv::imwrite("Calibration/img_cam/" + to_string(pic_count) + ".png", cam_light);
 		cv::imwrite("Calibration/img_proj/" + to_string(pic_count) + ".png", proj_chess);
 		cv::imwrite("Calibration/img_render/" + to_string(pic_count) + ".png", img_render);
@@ -354,6 +357,7 @@ public:
 	}
 
 	void calibrate_projector_read() {
+		fp=fopen("Calibration / chessSize.txt", "r");
 		while (1) {
 			string cam = "Calibration/img_cam/" + to_string(pic_count) + ".png";
 			string proj = "Calibration/img_cam/" + to_string(pic_count) + ".png";
@@ -383,7 +387,8 @@ public:
 			cv::Mat R;
 			cv::Rodrigues(rvec, R);
 			n = R * n;
-
+			fscanf(fp, "%d\n", &proj_chess_w);
+			fscanf(fp, "%d\n", &proj_chess_h);
 			cv::Size chess_sz = cv::Size(proj_chess_w, proj_chess_h);
 			if (!cv::findChessboardCorners(proj_chess, chess_sz, corners)) {
 				printf("Failed to find chessboardcorners in PROJ...\n");
@@ -413,7 +418,7 @@ public:
 		}
 
 		if (pic_count > 0) {
-			cout << "\n\n*** CALIBLATING CAMERA...\n" << endl;
+			std::cout << "\n\n*** CALIBLATING CAMERA...\n" << std::endl;
 			int proj_width = 1024;
 			int proj_height = 768;
 			cv::Mat intrinsic_matrix, cam_distortion;
@@ -427,7 +432,7 @@ public:
 				cv::noArray(),
 				cv::CALIB_ZERO_TANGENT_DIST | cv::CALIB_FIX_PRINCIPAL_POINT);
 
-			cout << "*** DONE! \n\nReprojection error is " << err <<
+			std::cout << "*** DONE! \n\nReprojection error is " << err <<
 				" \nStoring Intrinsics.xml \n\n";
 
 			cv::FileStorage fs("intrinsics_proj.xml", cv::FileStorage::WRITE);
@@ -436,6 +441,7 @@ public:
 				intrinsic_matrix << "cam_distortion" << cam_distortion;
 			fs.release();
 		}
+		fclose(fp);
 
 	}
 
@@ -446,12 +452,14 @@ public:
 	プロジェクターとライトのオンオフに注意！
 	board_sizeはチェスボードの間隔をメートル単位で指定
 	*/
-	void calibrate_projector(int board_h = 0, int board_w = 0,double board_size=0,bool read=false) {
+	void calibrate_projector(int board_w = 0, int board_h = 0,double board_size=0,bool read=false) {
 
 		if (read) {
 			calibrate_projector_read();
 			return;
 		}
+
+		fp = fopen("Calibration/chessSize.txt", "w");
 
 		for (int j = 0; j < board_h; j++) {
 			for (int i = 0; i < board_w; i++) {
@@ -659,10 +667,10 @@ public:
 					else if (key == '1') {
 						if (capMode != CaptureMode::LIGHT) {
 							printf("capMode is not LIGHT. Now, ");
-							cout << capMode << endl;
+							std::cout << capMode << std::endl;
 						}
 						else if (!proj_offblack_flag) {
-							printf("please projector black flag on!\n");
+							printf("please projector black flag on!\n\n");
 						}
 						else {
 							img_cam.copyTo(cam_light);
@@ -671,12 +679,13 @@ public:
 							proj_offblack_flag = true;
 
 							printf("LIGHT is captured. Next NOPROJ...\n");
+							printf("Please turn off LIGHT...\n\n");
 						}
 					}
 					else if (key == '2') {
 						if (capMode != CaptureMode::NOPROJ) {
 							printf("capMode is not NOPROJ. Now, ");
-							cout << capMode << endl;
+							std::cout << capMode << std::endl;
 						}
 						else if (!proj_offblack_flag) {
 							printf("please projector black flag on!\n");
@@ -686,13 +695,13 @@ public:
 							///Undistort(cam_noproj,cam_noproj);
 							capMode = CaptureMode::ONPROJ;
 							proj_offblack_flag = false;
-							printf("NOPROJ is captured. Next ONPROJ...\n");
+							printf("NOPROJ is captured. Next ONPROJ...\n\n");
 						}
 					}
 					else if (key == '3') {
 						if (capMode != CaptureMode::ONPROJ) {
 							printf("capMode is not ONPROJ. Now, ");
-							cout << capMode << endl;
+							std::cout << capMode << std::endl;
 						}
 						else if (proj_offblack_flag) {
 							printf("please projector black flag off!\n");
@@ -703,6 +712,7 @@ public:
 							capMode = CaptureMode::LIGHT;
 							proj_offblack_flag = true;
 							printf("ONPROJ is captured. Next LIGHT...\n");
+							printf("Please turn on LIGHT! \n\n");
 
 							corner_detect();
 						}
@@ -724,7 +734,7 @@ public:
 		#pragma region calibration
 
 				if (pic_count > 0) {
-					cout << "\n\n*** CALIBLATING CAMERA...\n" << endl;
+					std::cout << "\n\n*** CALIBLATING CAMERA...\n" << std::endl;
 
 					cv::Mat intrinsic_matrix, cam_distortion;
 					double err = cv::calibrateCamera(
@@ -737,7 +747,7 @@ public:
 						cv::noArray(),
 						cv::CALIB_ZERO_TANGENT_DIST | cv::CALIB_FIX_PRINCIPAL_POINT);
 
-					cout << "*** DONE! \n\nReprojection error is " << err <<
+					std::cout << "*** DONE! \n\nReprojection error is " << err <<
 						" \nStoring Intrinsics.xml \n\n";
 
 					cv::FileStorage fs("intrinsics_proj.xml", cv::FileStorage::WRITE);
@@ -757,6 +767,8 @@ public:
 
 				thread_fps_flag = false;
 
+
+				fclose(fp);
 		#pragma endregion 
 
 		#pragma region HSC Close
@@ -772,6 +784,111 @@ public:
 		#pragma endregion
 		#endif
 
+	}
+
+	void stereo_calibrate(int board_w = 0, int board_h = 0) {
+		vector<vector<cv::Point2d>> projPoints;
+		fp = fopen("Calibration/chessSize.txt", "r");
+
+		board_sz = cv::Size(board_w, board_h);
+		while (1) {
+			string cam = "Calibration/img_cam/" + to_string(pic_count) + ".png";
+			string proj = "Calibration/img_cam/" + to_string(pic_count) + ".png";
+			string render = "Calibration/img_render/" + to_string(pic_count) + ".png";
+			if (!checkFileExistence(cam) || !checkFileExistence(proj) || !checkFileExistence(render)) {
+				printf("File dosen't exist\n");
+				break;
+			}
+			pic_count++;
+
+			cv::Mat proj_chess;
+			cam_light = cv::imread(cam, 0);
+			proj_chess = cv::imread(proj, 0);
+			img_render = cv::imread(render, 0);
+			//Undistort(proj_chess, proj_chess);
+
+			vector <cv::Point2d> corners;
+			if (!cv::findChessboardCorners(cam_light, board_sz, corners)) {
+				printf("Failed to find chessboardcorners in LIGHT...\n");
+				continue;
+			}
+
+			//平面式
+			cv::Mat rvec, tvec;
+			cv::solvePnP(boardPoints, corners, cam_matrix, cam_distortion, rvec, tvec);
+			cv::Mat n = (cv::Mat_<double>(3, 1) << 0.0, 0.0, 1.0);
+			cv::Mat R;
+			cv::Rodrigues(rvec, R);
+			n = R * n;
+			fscanf(fp, "%d\n", &proj_chess_w);
+			fscanf(fp, "%d\n", &proj_chess_h);
+			cv::Size chess_sz = cv::Size(proj_chess_w, proj_chess_h);
+			if (!cv::findChessboardCorners(proj_chess, chess_sz, corners)) {
+				printf("Failed to find chessboardcorners in PROJ...\n");
+				continue;
+			}
+
+			cv::Mat cinv = cam_matrix.inv();
+			vector<cv::Point3d> v;
+			//平面逆投影
+			for (int i = 0; i < corners.size(); i++) {
+				cv::Mat tmp = (cv::Mat_<double>(3, 1) << corners[i].x, corners[i].y, 1.0f);
+				tmp = cinv * tmp;
+
+				double t = (n.dot(tvec)) / (n.dot(tmp));
+				tmp = t * tmp;
+				cv::Point3d x = cv::Point3d(tmp.at<double>(0), tmp.at<double>(1), tmp.at<double>(2));
+				v.push_back(x);
+			}
+
+			if (!cv::findChessboardCorners(img_render, chess_sz, corners)) {
+				printf("Failed to find chessboardcorners in PROJIMG...\n");
+				continue;
+			}
+
+			objPoints.push_back(v);
+			imgPoints.push_back(corners);
+		}
+
+		if (pic_count > 0) {
+			std::cout << "\n\n*** CALIBLATING CAMERA...\n" << std::endl;
+			int proj_width = 1024;
+			int proj_height = 768;
+			cv::Mat proj_matrix, proj_distortion;
+			
+			cv::FileStorage fs("intrinsics_proj.xml", cv::FileStorage::READ);
+			fs["camera_matrix"] >> proj_matrix;
+			fs["distortion_coefficients"] >> proj_distortion;
+
+			fs.release();
+			cv::Mat R, t, E, F;
+			double err = cv::stereoCalibrate(
+				objPoints,
+				imgPoints,
+				projPoints,
+				cam_matrix,
+				cam_distortion,
+				proj_matrix,
+				proj_distortion,
+				cv::Size(proj_width, proj_height),
+				R,
+				t,
+				E,
+				F,
+				cv::CALIB_FIX_INTRINSIC,
+				cv::TermCriteria(cv::TermCriteria::COUNT + cv::TermCriteria::EPS, 30, 1e-6)
+			);
+			
+
+			std::cout << "*** DONE! \n\nReprojection error is " << err <<
+				" \nStoring Intrinsics.xml \n\n";
+
+			cv::FileStorage fss("extrinc_param.xml", cv::FileStorage::WRITE);
+
+			fss << "R"<<R<<"t"<<t<<"E"<<E<<"F"<<F;
+			fss.release();
+		}
+		fclose(fp);
 	}
 
 
