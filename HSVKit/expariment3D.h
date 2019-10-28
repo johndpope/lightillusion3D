@@ -12,8 +12,8 @@
 //à íuçáÇÌÇπ
 
 
-#define PROJECTOR
-#define CAMERA
+//#define PROJECTOR
+//#define CAMERA
 const int track_r = 10;
 const int search_r = 30;
 
@@ -417,6 +417,8 @@ inline void mainloop() {
 #pragma region GLFW kit
 	//cv::Mat img_render = (cv::Mat(proj_height, proj_width, CV_8UC3, cv::Scalar::all(255)));
 	cv::Mat img_render = (cv::Mat(proj_height, proj_width, CV_8UC1, cv::Scalar::all(255)));
+	cv::Mat img_render2 = (cv::Mat(proj_height, proj_width, CV_8UC1, cv::Scalar::all(255)));
+	cv::Mat dst = (cv::Mat(proj_height, proj_width, CV_8UC1, cv::Scalar::all(255)));
 #pragma endregion
 
 #pragma region Calibration kit
@@ -504,7 +506,10 @@ inline void mainloop() {
 
 			cvtHomography(corner_xyz_undistorted, corner_xyz_proj, homography);
 
-			glfwkit.render(corner_xyz_cam, &img_render);
+			glfwkit.render(corner_xyz_cam, &img_render,&img_render2,0);
+			//cv::imshow("2", img_render);
+			//cv::waitKey(1);
+			diffImage(img_render, img_render2, dst,50);
 			//glfwkit.render(corner_xyz_cam, &img_proj_cam);
 			//cv::flip(img_render, img_render, 0);
 			//cv::warpPerspective(img_proj_cam, img_render, H, img_render.size());
@@ -515,8 +520,8 @@ inline void mainloop() {
 			//glkit.render(corner_xyz_proj, &img_render, texid);
 			//Display-rate Rendering with GLFW GUI
 			//glfwkit.update(corner_gl, &img_render);
-			if (img_render.data != NULL) {
-				img_render.copyTo(img_proj);
+			if (dst.data != NULL) {
+				dst.copyTo(img_proj);
 				//cv::cvtColor(img_render, img_proj, cv::COLOR_RGB2GRAY);
 
 			}
@@ -655,7 +660,8 @@ inline void mainloop() {
 				mspf = 33; break;
 			}
 		}
-		img_render.copyTo(img_display_proj);
+		//img_render.copyTo(img_display_proj);
+		dst.copyTo(img_display_proj);
 		//cv::cvtColor(img_render, img_display_proj, cv::COLOR_GRAY2RGB);
 		img_proj_cam.copyTo(img_display_proj_cam);
 		//cv::imshow("img_display_cam", img_display_cam);

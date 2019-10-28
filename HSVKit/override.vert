@@ -23,6 +23,5 @@ void main()
   TexCoord = VertexTexCoord;
   Normal= (MVP*vec4(VertexNormal,0.0f)).xyz;
 
-  
   gl_Position =MVP*vec4(VertexPosition, 1.0);
 }

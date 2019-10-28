@@ -152,7 +152,7 @@ public:
 
 	Model model;
 	GLuint texture_id[40];
-	GLuint tex;
+
 	bool modelFlag = false;
 
 	Shader shader;
@@ -216,31 +216,15 @@ public:
 		
 	}
 
-	void setup() {
+	virtual void setup() {
 		cv::Mat texture[40];
 		texture[0] = cv::imread("white.png");
 
-
-		
-		
-		/*
-		for (int i = 0; i < 40; i++) {
-			if (i < 9) {
-				texture[i] = cv::imread("moai/moai000" + to_string(i+1) + ".png");
-			}
-			else {
-				texture[i] = cv::imread("moai/moai00" + to_string(i+1) + ".png");
-			}
-			cv::flip(texture[i], texture[i], 0);
-			
-		}
-		*/
 
 		// The directions of axes are different between CV and GL
 		//cv::flip(texture[1], texture[1], 0);// The directions of axes are different between CV and GL
 		//cv::flip(texture[2], texture[2], 0);// The directions of axes are different between CV and GL
 		glGenTextures(40, texture_id);
-		glGenTextures(1, &tex);
 		/*
 		for (int i = 0; i < 40; i++) {
 			glBindTexture(GL_TEXTURE_2D, texture_id[i]);
@@ -250,11 +234,7 @@ public:
 		}
 		*/
 		shader.Load("Shader/simple.vert", "Shader/uvmap.frag");
-		glBindTexture(GL_TEXTURE_2D, tex);
-		cv::Mat renderimg = cv::imread("purin.jpg",1);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, renderimg.cols, renderimg.rows, 0, GL_BGR, GL_UNSIGNED_BYTE, renderimg.data);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
 		//shader.SetTextureUniform("image", tex);
 		
 
@@ -338,7 +318,7 @@ public:
 	}
 
 	//Display
-	inline void render(float* input_xyz, cv::Mat* img = NULL, int texid = 0) {
+	virtual void render(float* input_xyz, cv::Mat* img = NULL, int texid = 0) {
 
 		if (modelFlag) {
 			//cout << "Y" << endl;
@@ -391,7 +371,7 @@ public:
 		}
 	}
 
-	inline void render(float* input_xyz, cv::Mat* img, cv::Mat renderimg) {
+	virtual void render(float* input_xyz, cv::Mat* img, cv::Mat renderimg) {
 
 		glClearColor(0, 0.0, 0, 0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -408,7 +388,7 @@ public:
 
 		
 
-		glBindTexture(GL_TEXTURE_2D, tex);
+		//glBindTexture(GL_TEXTURE_2D, tex);
 		//glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, renderimg.cols, renderimg.rows, 0, GL_RED, GL_UNSIGNED_BYTE, renderimg.data);
 		
 		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, renderimg.cols, renderimg.rows, GL_RED, GL_UNSIGNED_BYTE, renderimg.data);

@@ -57,11 +57,11 @@
     <ClCompile Include="springSimulate.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="Shader.cpp">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="VertexArray.cpp">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Shader.cpp">
+      <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -131,6 +131,9 @@
     <ClInclude Include="expariment3D.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
+    <ClInclude Include="GLkit_diff.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="memo.txt">
@@ -142,6 +145,12 @@
       <Filter>ソース ファイル\Shader</Filter>
     </None>
     <None Include="Shader\uvmap.frag">
+      <Filter>ソース ファイル\Shader</Filter>
+    </None>
+    <None Include="override.vert">
+      <Filter>ソース ファイル\Shader</Filter>
+    </None>
+    <None Include="override.frag">
       <Filter>ソース ファイル\Shader</Filter>
     </None>
   </ItemGroup>

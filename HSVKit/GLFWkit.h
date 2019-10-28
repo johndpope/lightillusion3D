@@ -1,8 +1,8 @@
 #pragma once
 
 #include "common.h"
-#include "GLkit.h"
-
+//#include "GLkit.h"
+#include"GLkit_diff.h"
 class GLFWkit {
 public:
     //Window
@@ -15,7 +15,7 @@ public:
     Eigen::Vector2f press_position_last;
 
     //GLrender
-    GLkit glkit;
+    GLkitD glkit;
 
 	char* fileName;
 
@@ -76,6 +76,9 @@ public:
     void render(float *input_xyz, cv::Mat *img = NULL, int texid = 0) {
         glkit.render(input_xyz, img, texid);
     }
+	void render(float* input_xyz, cv::Mat* img = NULL,cv::Mat* img2=NULL, int texid = 0) {
+		glkit.render2(input_xyz, img,img2, texid);
+	}
 	/*
 	void render(float* input_xyz, cv::Mat* img, cv::Mat renderimg) {
 		glkit.render(input_xyz, img, renderimg);
