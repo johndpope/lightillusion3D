@@ -417,7 +417,7 @@ inline void mainloop() {
 #pragma region GLFW kit
 	//cv::Mat img_render = (cv::Mat(proj_height, proj_width, CV_8UC3, cv::Scalar::all(255)));
 	cv::Mat img_render = (cv::Mat(proj_height, proj_width, CV_8UC1, cv::Scalar::all(255)));
-	cv::Mat img_render2 = (cv::Mat(proj_height, proj_width, CV_8UC1, cv::Scalar::all(255)));
+
 	cv::Mat dst = (cv::Mat(proj_height, proj_width, CV_8UC1, cv::Scalar::all(255)));
 #pragma endregion
 
@@ -469,9 +469,9 @@ inline void mainloop() {
 
 		//cv::Mat KI = (cv::Mat_<double>(3, 3) << proj_height, 0, proj_height / 2.0, 0, proj_width, proj_width / 2.0, 0, 0, 1);
 		//cv::Mat K = (cv::Mat_<double>(3, 3) << cam_height, 0, cam_height / 2.0, 0, cam_width, cam_width / 2.0, 0, 0, 1);
-		GLFWkit glfwkit("glfwkit", proj_width, proj_height,KI.inv()*H*K,"horse.obj");
+		//GLFWkit glfwkit("glfwkit", proj_width, proj_height,KI.inv()*H*K,"horse.obj");
 
-		//GLFWkit glfwkit("glfwkit",cam_width, cam_height,KI.inv()*H*K,"horse.obj");
+		GLFWkit glfwkit("glfwkit",cam_width, cam_height,KI.inv()*H*K,"horse.obj");
 		glfwkit.setup();
 
 
@@ -505,12 +505,14 @@ inline void mainloop() {
 			calib.UndistortPerPoint(corner_xyz_cam, corner_xyz_undistorted, corner_detected);
 
 			cvtHomography(corner_xyz_undistorted, corner_xyz_proj, homography);
-
-			glfwkit.render(corner_xyz_cam, &img_render,0);
+			for (int i = 0; i < 4; i++) {
+				corner_xyz_cam[3 * i + 0] += 100.0 * sin((double)count/100.0);
+			}
+			//glfwkit.render(corner_xyz_cam, &img_render,0);
 			//cv::imshow("2", img_render);
 			//cv::waitKey(1);
 			//diffImage(img_render, img_render2, dst,50);
-			//glfwkit.render(corner_xyz_cam, &img_proj_cam);
+			glfwkit.render(corner_xyz_cam, &img_proj_cam,0);
 			//cv::flip(img_render, img_render, 0);
 			//cv::warpPerspective(img_proj_cam, img_render, H, img_render.size());
 
@@ -550,7 +552,7 @@ inline void mainloop() {
 				circumstance += center[0] - pre_center[0];
 				cntn++;
 			}
-
+			count++;
 
 			thread_process_cnt++;
 			SetEvent(event_process);
@@ -668,7 +670,7 @@ inline void mainloop() {
 		//cv::circle(img_display_proj, cv::Point(486, 439), 10, cv::Scalar(200, 0, 0));
 		cv::imshow("img_display_cam", img_display_cam);
 		cv::imshow("img_display_proj", img_display_proj);
-		//cv::imshow("img_display_proj_cam", img_display_proj_cam);
+		cv::imshow("img_display_proj_cam", img_display_proj_cam);
 
 		
 		//cout << velocityAccel<<endl;

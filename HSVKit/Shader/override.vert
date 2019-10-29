@@ -12,7 +12,6 @@ out vec2 TexCoord;
 out vec3 Normal;
 
 
-
 float rand(vec2 co){
    return fract(sin(dot(co.xy,vec2(12.9898,78.233))) * 43758.5453);
 }
@@ -22,6 +21,7 @@ void main()
   Position =(MVP*vec4(VertexPosition,1.0f)).xyz;
   TexCoord = VertexTexCoord;
   Normal= (MVP*vec4(VertexNormal,0.0f)).xyz;
+
 //gl_FrontColor=gl_Color;
   gl_Position =MVP*vec4(VertexPosition, 1.0);
 }

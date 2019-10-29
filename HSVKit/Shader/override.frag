@@ -12,6 +12,7 @@ layout(pixel_center_integer) in vec4 gl_FragCoord;
 in vec3 Position;
 in vec2 TexCoord;
 in vec3 Normal;
+
 vec3 light=vec3(0.0f,0.0f,-5.0f);
 vec3 ambient=vec3(0.25f,0.25f,0.25f);
 
@@ -24,9 +25,11 @@ void main()
   vec3 color=vec3(1.0,1.0,1.0)*v;
 
   ivec2 screenpos=ivec2(gl_FragCoord.xy);
+
   vec4 bcolor=texelFetch(myTex,screenpos,0);
 
-	FragColor = (vec4(color,1.0)-bcolor)/(bcolor+0.1)*0.4+0.1;
+	//FragColor = (vec4(color,1.0)-bcolor)/(bcolor+0.1)*0.4+0.1;
+	FragColor=vec4(color,1.0)-bcolor;
   
  
 }

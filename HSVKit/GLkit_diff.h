@@ -80,7 +80,7 @@ public:
 		//Projection
 		//glMatrixMode(GL_PROJECTION);
 		//glLoadIdentity();
-		glViewport(0, 0, render_size[0], render_size[1]);
+		
 		FramebufferName = 0;
 		glGenFramebuffers(1, &FramebufferName);
 		glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
@@ -93,16 +93,10 @@ public:
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
-		
-		glGenRenderbuffers(1, &depthrenderbuffer);
-		glBindRenderbuffer(GL_RENDERBUFFER, depthrenderbuffer);
-		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, render_size[0], render_size[1]);
-		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthrenderbuffer);
-
 
 		glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, renderedTexture, 0);
 		glDrawBuffers(1, DrawBuffers);
-
+		glViewport(0, 0, render_size[0], render_size[1]);
 		//Lighting
 		/*
 		GLfloat l4Position[] = { 0.0f, 0.0f, 5.0f, 0.0 };
@@ -143,42 +137,36 @@ public:
 			0, 0, 0, 1);
 		shader.SetActive();
 		shader.SetMatrixUniform("MVP", homography * RotX * projection * viewMat * M);
-		//shader.SetMatrixUniform("MVP", RotX * projection * viewMat * M);
-		//shader.SetMatrixUniform("MVP",projection*viewMat*M);
-		//shader.SetMatrixUniform("MVP", M*viewMat*projection);
+		//shader.SetMatrixUniform("MVP", RotX*projection * viewMat * M);
+
 		//glm::vec4 a = homography*projection * viewMat * M * glm::vec4(0.0, 0.0, 0.0, 1.0);
 		//a /= a.a;
 		//cout << glm::to_string(a) << endl;
 		glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
-		//glViewport(0, 0, render_size[0], render_size[1]);
+		glViewport(0, 0, render_size[0], render_size[1]);
 		//glDrawElements(GL_TRIANGLES, model.varray.size()/8, GL_UNSIGNED_INT, nullptr);
 		glDrawArrays(GL_TRIANGLES, 0, model.varray.size() / 8);
 		
 		//glClearColor(0, 0.0, 0, 0);
 		//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+		
 		for (int i = 0; i < 4; i++) {
-			input_xyz[3 * i + 0] -= 10.0f;
+			input_xyz[3 * i + 0] -= 5.0f;
 		}
+		
 		mvMatrix.change3Dpoint(objpoints, input_xyz, M, 4);
 
 		oshader.SetActive();
 		oshader.SetMatrixUniform("MVP", homography * RotX * projection * viewMat * M);
+		//oshader.SetMatrixUniform("MVP", RotX * projection * viewMat * M);
 		oshader.SetTextureUniform("renderedTexture", renderedTexture);
-		//shader.SetMatrixUniform("MVP", RotX * projection * viewMat * M);
-		//shader.SetMatrixUniform("MVP",projection*viewMat*M);
-		//shader.SetMatrixUniform("MVP", M*viewMat*projection);
-		//glm::vec4 a = homography*projection * viewMat * M * glm::vec4(0.0, 0.0, 0.0, 1.0);
-		//a /= a.a;
-		//cout << glm::to_string(a) << endl;
-
-		//glDrawElements(GL_TRIANGLES, model.varray.size()/8, GL_UNSIGNED_INT, nullptr);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glDrawArrays(GL_TRIANGLES, 0, model.varray.size() / 8);
-
+		
 		for (int i = 0; i < 4; i++) {
-			input_xyz[3 * i + 0] += 10.0f;
+			input_xyz[3 * i + 0] += 5.0f;
 		}
+	
 		if (img!= NULL && img->cols == render_size[0] && img->rows == render_size[1]) {
 			//glReadPixels(0, 0, render_size[0], render_size[1], GL_RGB, GL_UNSIGNED_BYTE, img->data);
 			glReadPixels(0, 0, render_size[0], render_size[1], GL_RED, GL_UNSIGNED_BYTE, img->data);
