@@ -170,8 +170,8 @@
     <Text Include="memo.txt" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="override.frag" />
-    <None Include="override.vert" />
+    <None Include="Shader\override.frag" />
+    <None Include="Shader\override.vert" />
     <None Include="Shader\simple.vert" />
     <None Include="Shader\uvmap.frag" />
   </ItemGroup>

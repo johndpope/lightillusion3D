@@ -2,7 +2,7 @@
 
 //uniform sampler2D image;
 
- out vec4 FragColor;
+layout(location=0) out vec3 FragColor;
 
 in vec3 Position;
 in vec2 TexCoord;
@@ -16,10 +16,10 @@ void main()
   vec3 l=normalize(light-Position);
   float v=max(dot(l,N),0.0);
   //v=rand(TexCoord);
-  vec3 color=vec3(1.0,1.0,1.0)*v;
+  vec3 Color=vec3(1.0,1.0,1.0)*v;
 
 
-	FragColor = vec4(color ,0.5f);
+	FragColor = Color;
   
  
 }

@@ -77,7 +77,7 @@ public:
         glkit.render(input_xyz, img, texid);
     }
 	void render(float* input_xyz, cv::Mat* img = NULL,cv::Mat* img2=NULL, int texid = 0) {
-		glkit.render2(input_xyz, img,img2, texid);
+		glkit.render(input_xyz, img, texid);
 	}
 	/*
 	void render(float* input_xyz, cv::Mat* img, cv::Mat renderimg) {

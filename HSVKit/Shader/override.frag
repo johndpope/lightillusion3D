@@ -2,7 +2,12 @@
 
 //uniform sampler2D image;
 
-layout (location = 0) out vec4 FragColor;
+out vec4 FragColor;
+
+
+uniform sampler2D myTex;
+
+layout(pixel_center_integer) in vec4 gl_FragCoord;
 
 in vec3 Position;
 in vec2 TexCoord;
@@ -17,8 +22,11 @@ void main()
   float v=max(dot(l,N),0.0);
   //v=rand(TexCoord);
   vec3 color=vec3(1.0,1.0,1.0)*v;
-   vec4 bcolor=gl_FragColor;
-	FragColor = vec4(color ,1.0f)-bcolor;
+
+  ivec2 screenpos=ivec2(gl_FragCoord.xy);
+  vec4 bcolor=texelFetch(myTex,screenpos,0);
+
+	FragColor = vec4(color,1.0)-bcolor;
   
  
 }

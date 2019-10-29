@@ -5,6 +5,10 @@ class GLkitD :public GLkit {
 private:
 	Shader oshader;
 
+	GLuint FramebufferName;
+	GLuint renderedTexture;
+	GLuint depthrenderbuffer;
+	GLenum DrawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
 public:
 
 	GLkitD(int window_w, int window_h, cv::Mat H) :
@@ -20,7 +24,7 @@ public:
 		// The directions of axes are different between CV and GL
 		//cv::flip(texture[1], texture[1], 0);// The directions of axes are different between CV and GL
 		//cv::flip(texture[2], texture[2], 0);// The directions of axes are different between CV and GL
-		glGenTextures(40, texture_id);
+		//ccccccccccglGenTextures(40, texture_id);
 		/*
 		for (int i = 0; i < 40; i++) {
 			glBindTexture(GL_TEXTURE_2D, texture_id[i]);
@@ -31,6 +35,9 @@ public:
 		*/
 		shader.Load("Shader/simple.vert", "Shader/uvmap.frag");
 		oshader.Load("Shader/override.vert", "Shader/override.frag");
+
+		//shader.printProgram();
+		//oshader.printProgram();
 		//shader.SetTextureUniform("image", tex);
 
 
@@ -65,28 +72,36 @@ public:
 			);
 		//cout <<glm::to_string( projection)<< endl;
 		M = glm::translate(M, glm::vec3(0.0, 0.0, 1.0f));
-		shader.SetActive();
+		//shader.SetActive();
 		//shader.printProgram();
-		shader.SetMatrixUniform("MVP", projection * M);
+		//shader.SetMatrixUniform("MVP", projection * M);
 		//shader.SetFloatUniform("U", 0.0f);
 
 		//Projection
 		//glMatrixMode(GL_PROJECTION);
 		//glLoadIdentity();
 		glViewport(0, 0, render_size[0], render_size[1]);
-		//glOrtho(-view_fov * render_aspect, view_fov * render_aspect, -view_fov, view_fov, 0.1f, 10.0f);
-		//glFrustum(-view_fov * render_aspect, view_fov * render_aspect, -view_fov, view_fov, 0.1f, 10.0f);
-		//gluPerspective(22.4, render_aspect, 0.1f, 10.0f);
+		FramebufferName = 0;
+		glGenFramebuffers(1, &FramebufferName);
+		glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
 
-		//glTranslated(0.0, 0.0, -1.0);
-		//glScalef(0.1f, 0.1f, 0.1f);
+		glGenTextures(1, &renderedTexture);
+		glBindTexture(GL_TEXTURE_2D, renderedTexture);
 
-		//ModelView
-		//glMatrixMode(GL_MODELVIEW);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, render_size[0], render_size[1], 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
 
-		//glLoadIdentity();
-		//glScalef(0.1f, 0.1f, 0.1f);
-		//glRotatef(180.0f, 0.0f, 1.0f, 0.0f);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+		
+		glGenRenderbuffers(1, &depthrenderbuffer);
+		glBindRenderbuffer(GL_RENDERBUFFER, depthrenderbuffer);
+		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, render_size[0], render_size[1]);
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthrenderbuffer);
+
+
+		glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, renderedTexture, 0);
+		glDrawBuffers(1, DrawBuffers);
 
 		//Lighting
 		/*
@@ -113,7 +128,8 @@ public:
 		printf("GLSL Version :%s\n", glslVersion);
 	}
 
-	void render2(float* input_xyz, cv::Mat* img = NULL,cv::Mat* img2=NULL, int texid = 0) {
+	void render(float* input_xyz, cv::Mat* img = NULL, int texid = 0) {
+		//cout << "r" << endl;
 		glClearColor(0, 0.0, 0, 0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -133,23 +149,22 @@ public:
 		//glm::vec4 a = homography*projection * viewMat * M * glm::vec4(0.0, 0.0, 0.0, 1.0);
 		//a /= a.a;
 		//cout << glm::to_string(a) << endl;
-
+		glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
+		glViewport(0, 0, render_size[0], render_size[1]);
 		//glDrawElements(GL_TRIANGLES, model.varray.size()/8, GL_UNSIGNED_INT, nullptr);
 		glDrawArrays(GL_TRIANGLES, 0, model.varray.size() / 8);
-		if (img != NULL && img->cols == render_size[0] && img->rows == render_size[1]) {
-			//glReadPixels(0, 0, render_size[0], render_size[1], GL_RGB, GL_UNSIGNED_BYTE, img->data);
-			glReadPixels(0, 0, render_size[0], render_size[1], GL_RED, GL_UNSIGNED_BYTE, img->data);
-		}
-		glClearColor(0, 0.0, 0, 0);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		
+		//glClearColor(0, 0.0, 0, 0);
+		//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		for (int i = 0; i < 4; i++) {
-			input_xyz[3 * i + 0] += 10.0f;
+			input_xyz[3 * i + 0] -= 10.0f;
 		}
 		mvMatrix.change3Dpoint(objpoints, input_xyz, M, 4);
 
 		oshader.SetActive();
 		oshader.SetMatrixUniform("MVP", homography * RotX * projection * viewMat * M);
+		oshader.SetTextureUniform("renderedTexture", 0);
 		//shader.SetMatrixUniform("MVP", RotX * projection * viewMat * M);
 		//shader.SetMatrixUniform("MVP",projection*viewMat*M);
 		//shader.SetMatrixUniform("MVP", M*viewMat*projection);
@@ -158,14 +173,15 @@ public:
 		//cout << glm::to_string(a) << endl;
 
 		//glDrawElements(GL_TRIANGLES, model.varray.size()/8, GL_UNSIGNED_INT, nullptr);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glDrawArrays(GL_TRIANGLES, 0, model.varray.size() / 8);
 
 		for (int i = 0; i < 4; i++) {
-			input_xyz[3 * i + 0] -= 10.0f;
+			input_xyz[3 * i + 0] += 10.0f;
 		}
-		if (img2 != NULL && img2->cols == render_size[0] && img2->rows == render_size[1]) {
+		if (img!= NULL && img->cols == render_size[0] && img->rows == render_size[1]) {
 			//glReadPixels(0, 0, render_size[0], render_size[1], GL_RGB, GL_UNSIGNED_BYTE, img->data);
-			glReadPixels(0, 0, render_size[0], render_size[1], GL_RED, GL_UNSIGNED_BYTE, img2->data);
+			glReadPixels(0, 0, render_size[0], render_size[1], GL_RED, GL_UNSIGNED_BYTE, img->data);
 		}
 	}
 	

@@ -506,10 +506,10 @@ inline void mainloop() {
 
 			cvtHomography(corner_xyz_undistorted, corner_xyz_proj, homography);
 
-			glfwkit.render(corner_xyz_cam, &img_render,&img_render2,0);
+			glfwkit.render(corner_xyz_cam, &img_render,0);
 			//cv::imshow("2", img_render);
 			//cv::waitKey(1);
-			diffImage(img_render, img_render2, dst,50);
+			//diffImage(img_render, img_render2, dst,50);
 			//glfwkit.render(corner_xyz_cam, &img_proj_cam);
 			//cv::flip(img_render, img_render, 0);
 			//cv::warpPerspective(img_proj_cam, img_render, H, img_render.size());
@@ -520,8 +520,8 @@ inline void mainloop() {
 			//glkit.render(corner_xyz_proj, &img_render, texid);
 			//Display-rate Rendering with GLFW GUI
 			//glfwkit.update(corner_gl, &img_render);
-			if (dst.data != NULL) {
-				dst.copyTo(img_proj);
+			if (img_render.data != NULL) {
+				img_render.copyTo(img_proj);
 				//cv::cvtColor(img_render, img_proj, cv::COLOR_RGB2GRAY);
 
 			}
@@ -661,7 +661,7 @@ inline void mainloop() {
 			}
 		}
 		//img_render.copyTo(img_display_proj);
-		dst.copyTo(img_display_proj);
+		img_render.copyTo(img_display_proj);
 		//cv::cvtColor(img_render, img_display_proj, cv::COLOR_GRAY2RGB);
 		img_proj_cam.copyTo(img_display_proj_cam);
 		//cv::imshow("img_display_cam", img_display_cam);
@@ -670,9 +670,7 @@ inline void mainloop() {
 		cv::imshow("img_display_proj", img_display_proj);
 		//cv::imshow("img_display_proj_cam", img_display_proj_cam);
 
-		if (abs(circumstance) > 1.3f) {
-			//cout << circumstance << endl;
-		}
+		
 		//cout << velocityAccel<<endl;
 
 	}

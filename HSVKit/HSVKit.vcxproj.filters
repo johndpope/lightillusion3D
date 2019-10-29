@@ -147,10 +147,10 @@
     <None Include="Shader\uvmap.frag">
       <Filter>ソース ファイル\Shader</Filter>
     </None>
-    <None Include="override.vert">
+    <None Include="Shader\override.frag">
       <Filter>ソース ファイル\Shader</Filter>
     </None>
-    <None Include="override.frag">
+    <None Include="Shader\override.vert">
       <Filter>ソース ファイル\Shader</Filter>
     </None>
   </ItemGroup>
