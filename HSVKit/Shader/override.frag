@@ -26,7 +26,7 @@ void main()
   ivec2 screenpos=ivec2(gl_FragCoord.xy);
   vec4 bcolor=texelFetch(myTex,screenpos,0);
 
-	FragColor = vec4(color,1.0)-bcolor;
+	FragColor = (vec4(color,1.0)-bcolor)/1.5+0.5;
   
  
 }

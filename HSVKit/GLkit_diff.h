@@ -150,7 +150,7 @@ public:
 		//a /= a.a;
 		//cout << glm::to_string(a) << endl;
 		glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
-		glViewport(0, 0, render_size[0], render_size[1]);
+		//glViewport(0, 0, render_size[0], render_size[1]);
 		//glDrawElements(GL_TRIANGLES, model.varray.size()/8, GL_UNSIGNED_INT, nullptr);
 		glDrawArrays(GL_TRIANGLES, 0, model.varray.size() / 8);
 		
@@ -164,7 +164,7 @@ public:
 
 		oshader.SetActive();
 		oshader.SetMatrixUniform("MVP", homography * RotX * projection * viewMat * M);
-		oshader.SetTextureUniform("renderedTexture", 0);
+		oshader.SetTextureUniform("renderedTexture", renderedTexture);
 		//shader.SetMatrixUniform("MVP", RotX * projection * viewMat * M);
 		//shader.SetMatrixUniform("MVP",projection*viewMat*M);
 		//shader.SetMatrixUniform("MVP", M*viewMat*projection);
