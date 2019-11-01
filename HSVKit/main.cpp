@@ -14,8 +14,8 @@ int main() {
 
 	Calibration calib;
 	calib.Load_matrix("intrinsics_large_cam.xml", 1296, 968);
-	calib.calibrate_projector(10, 7, 0.022f,true);
-
+	//calib.calibrate_projector(10, 7, 0.022f,true);
+	calib.stereo_calibrate(10, 7, 0.022f);
 
 	
 	/*

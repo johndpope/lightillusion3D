@@ -319,7 +319,7 @@ public:
 		cv::Mat R;
 		cv::Rodrigues(rvec, R);
 		n = R * n;
-
+		cv::Mat Rt = R.t();
 
 		cv::Mat proj_chess;
 		Undistort(cam_onproj, cam_onprojd);
@@ -350,7 +350,9 @@ public:
 
 			double t = (n.dot(tvec)) / (n.dot(tmp));
 			tmp = t * tmp;
-			cv::Point3f x = cv::Point3f(tmp.at<double>(0), tmp.at<double>(1), tmp.at<double>(2));
+			tmp = tmp - tvec;
+			tmp = Rt * tmp;
+			cv::Point3f x = cv::Point3f((float)tmp.at<double>(0), (float)tmp.at<double>(1), (float)tmp.at<double>(2));
 			v.push_back(x);
 		}
 
@@ -464,7 +466,7 @@ public:
 			double err = cv::calibrateCamera(
 				objPoints,
 				imgPoints,
-				cv::Size(1024, 768),
+				cv::Size(proj_width, proj_height),
 				intrinsic_matrix,
 				distortion,
 				cv::noArray(),
@@ -829,14 +831,21 @@ public:
 
 	}
 
-	void stereo_calibrate(int board_w = 0, int board_h = 0) {
-		vector<vector<cv::Point2d>> projPoints;
+	void stereo_calibrate(int board_w = 0, int board_h = 0,float board_size=0) {
+		vector<vector<cv::Point2f>> projPoints;
+		board_n = board_h * board_w;
+		board_sz = cv::Size(board_w, board_h);
+		for (int j = 0; j < board_h; j++) {
+			for (int i = 0; i < board_w; i++) {
+				cv::Point3f tmp = cv::Point3f((float)i * board_size, (float)j * board_size, 0.0);
+				boardPoints.push_back(tmp);
+			}
+		}
 		fp = fopen("Calibration/chessSize.txt", "r");
 
-		board_sz = cv::Size(board_w, board_h);
 		while (1) {
 			string cam = "Calibration/img_cam/" + to_string(pic_count) + ".png";
-			string proj = "Calibration/img_cam/" + to_string(pic_count) + ".png";
+			string proj = "Calibration/img_proj/" + to_string(pic_count) + ".png";
 			string render = "Calibration/img_render/" + to_string(pic_count) + ".png";
 			if (!checkFileExistence(cam) || !checkFileExistence(proj) || !checkFileExistence(render)) {
 				printf("File dosen't exist\n");
@@ -845,9 +854,9 @@ public:
 			pic_count++;
 
 			cv::Mat proj_chess;
-			cam_light = cv::imread(cam, 0);
-			proj_chess = cv::imread(proj, 0);
-			img_render = cv::imread(render, 0);
+			cam_light = cv::imread(cam);
+			proj_chess = cv::imread(proj);
+			img_render = cv::imread(render);
 			//Undistort(proj_chess, proj_chess);
 
 			vector <cv::Point2f> corners;
@@ -863,10 +872,11 @@ public:
 			cv::Mat R;
 			cv::Rodrigues(rvec, R);
 			n = R * n;
+			cv::Mat Rt = R.t();
 			fscanf(fp, "%d\n", &proj_chess_w);
 			fscanf(fp, "%d\n", &proj_chess_h);
 			cv::Size chess_sz = cv::Size(proj_chess_w, proj_chess_h);
-			if (!cv::findChessboardCorners(proj_chess, chess_sz, corners)) {
+			if (!cv::findChessboardCorners(proj_chess, chess_sz, corners, cv::CALIB_CB_ADAPTIVE_THRESH + cv::CALIB_CB_NORMALIZE_IMAGE + cv::CALIB_CB_FILTER_QUADS + cv::CALIB_CB_FAST_CHECK)) {
 				printf("Failed to find chessboardcorners in PROJ...\n");
 				continue;
 			}
@@ -880,17 +890,20 @@ public:
 
 				double t = (n.dot(tvec)) / (n.dot(tmp));
 				tmp = t * tmp;
-				cv::Point3f x = cv::Point3f(tmp.at<double>(0), tmp.at<double>(1), tmp.at<double>(2));
+				tmp = tmp - tvec;
+				tmp = Rt * tmp;
+				cv::Point3f x = cv::Point3f((float)tmp.at<double>(0), (float)tmp.at<double>(1), (float)tmp.at<double>(2));
 				v.push_back(x);
 			}
-
-			if (!cv::findChessboardCorners(img_render, chess_sz, corners)) {
+			vector<cv::Point2f> corners_p;
+			if (!cv::findChessboardCorners(img_render, chess_sz, corners_p)) {
 				printf("Failed to find chessboardcorners in PROJIMG...\n");
 				continue;
 			}
 
 			objPoints.push_back(v);
 			imgPoints.push_back(corners);
+			projPoints.push_back(corners_p);
 		}
 
 		if (pic_count > 0) {
@@ -931,6 +944,8 @@ public:
 			fss << "R"<<R<<"t"<<t<<"E"<<E<<"F"<<F;
 			fss.release();
 		}
+		cv::imshow("l", cam_light);
+		cv::waitKey(0);
 		fclose(fp);
 	}
 
