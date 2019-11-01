@@ -6,8 +6,8 @@
 using namespace std;
 
 
-#define CAMERA
-#define PROJECTOR
+//#define CAMERA
+//#define PROJECTOR
 enum CaptureMode {
 	LIGHT = 0,
 	NOPROJ = 1,
@@ -715,6 +715,17 @@ public:
 							printf("Please turn on LIGHT! \n\n");
 
 							corner_detect();
+						}
+					}
+					else  if (key == 't') {
+						vector < cv::Point > corners;
+						cv::Size chess_sz = cv::Size(checkerBoard.w - 1, checkerBoard.h - 1);
+						if (!cv::findChessboardCorners(img_proj, chess_sz, corners)) {
+							printf("Failed to find chessboardcorners in PROJ...\n");
+	
+						}
+						else {
+							printf("found");
 						}
 					}
 					img_render.copyTo(img_proj);
