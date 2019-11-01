@@ -409,6 +409,7 @@ public:
 			cv::Mat R;
 			cv::Rodrigues(rvec, R);
 			n = R * n;
+			cv::Mat Rt = R.t();
 			//cout << tvec << endl;
 			fscanf(fp, "%d\n", &proj_chess_w);
 			fscanf(fp, "%d\n", &proj_chess_h);
@@ -432,13 +433,15 @@ public:
 				//cout << tmp << endl;
 				double t = (n.dot(tvec)) / (n.dot(tmp));
 				tmp = t * tmp;
+				tmp = tmp - tvec;
+				tmp = Rt * tmp;
 				//cout << tmp << endl;
 				//cv::waitKey(0);
 				cv::Point3f x = cv::Point3f((float)tmp.at<double>(0), (float)tmp.at<double>(1), (float)tmp.at<double>(2));
 				if (i == 0) {
 					o = x;
 				}
-				v.push_back(x-o);
+				v.push_back(x);
 			}
 			corners.clear();
 			if (!cv::findChessboardCorners(img_render, chess_sz, corners)) {
@@ -448,9 +451,7 @@ public:
 
 			objPoints.push_back(v);
 			imgPoints.push_back(corners);
-			if (pic_count == 1) {
-				break;
-			}
+		
 		}
 		
 
@@ -467,7 +468,8 @@ public:
 				intrinsic_matrix,
 				distortion,
 				cv::noArray(),
-				cv::noArray());
+				cv::noArray(),
+				cv::CALIB_FIX_PRINCIPAL_POINT);
 
 			std::cout << "*** DONE! \n\nReprojection error is " << err <<
 				" \nStoring Intrinsics.xml \n\n";
@@ -479,6 +481,7 @@ public:
 			fs.release();
 		}
 		fclose(fp);
+	cv::waitKey(0);
 
 	}
 
