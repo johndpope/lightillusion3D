@@ -403,7 +403,8 @@ public:
 			
 			//•½–ÊŽ®
 			cv::Mat rvec, tvec;
-			cv::solvePnP(boardPoints, corners, cam_matrix, cam_distortion, rvec, tvec);
+			cv::solvePnPRansac(boardPoints, corners, cam_matrix, cam_distortion, rvec, tvec);
+			//cout << rvec << endl;
 			cv::Mat n = (cv::Mat_<double>(3, 1) << 0.0, 0.0, 1.0);
 			cv::Mat R;
 			cv::Rodrigues(rvec, R);
@@ -431,7 +432,7 @@ public:
 				//cout << tmp << endl;
 				double t = (n.dot(tvec)) / (n.dot(tmp));
 				tmp = t * tmp;
-				cout << tmp << endl;
+				//cout << tmp << endl;
 				//cv::waitKey(0);
 				cv::Point3f x = cv::Point3f((float)tmp.at<double>(0), (float)tmp.at<double>(1), (float)tmp.at<double>(2));
 				if (i == 0) {
@@ -457,7 +458,7 @@ public:
 			std::cout << "\n\n*** CALIBLATING CAMERA...\n" << std::endl;
 			int proj_width = 1024;
 			int proj_height = 768;
-			cout << objPoints[0] << endl;
+			//cout << objPoints[0] << endl;
 			cv::Mat intrinsic_matrix, distortion;
 			double err = cv::calibrateCamera(
 				objPoints,
