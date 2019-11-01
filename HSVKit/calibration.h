@@ -6,8 +6,8 @@
 using namespace std;
 
 
-//#define CAMERA
-//#define PROJECTOR
+#define CAMERA
+#define PROJECTOR
 enum CaptureMode {
 	LIGHT = 0,
 	NOPROJ = 1,
@@ -186,6 +186,7 @@ private:
 	bool thread_project_flag = true;
 	
 	std::FILE* fp;
+	int tvalue = 150;
 public:
 
 	Calibration() {
@@ -288,10 +289,12 @@ public:
 		static_cast<Calibration*>(userdata)->thread_project_flag = false;
 		
 		d.copyTo(static_cast<Calibration*>(userdata)->img_render(cv::Rect(c.center.x - c.w * c.size / 2-1, c.center.y - c.h * c.size / 2-1, c.w * c.size, c.h * c.size)));
-
+		cv::rectangle(static_cast<Calibration*>(userdata)->img_render, cv::Rect(c.center.x - c.w * c.size / 2 -5, c.center.y - c.h * c.size / 2 -5, c.w * c.size+5, c.h * c.size+5), cv::Scalar(255, 255, 255), 5);
 		static_cast<Calibration*>(userdata)->thread_capture_flag = true;
 		static_cast<Calibration*>(userdata)->thread_process_flag = true;
 		static_cast<Calibration*>(userdata)->thread_project_flag = true;
+
+		
 
 	}
 
@@ -317,9 +320,15 @@ public:
 		Undistort(cam_onproj, cam_onprojd);
 		Undistort(cam_noproj, cam_noprojd);
 		cv::absdiff(cam_onprojd, cam_noprojd, proj_chess);
+		//cv::equalizeHist(cam_onprojd, cam_onprojd);
+		cv::threshold(cam_onprojd, cam_onprojd, tvalue, 250, cv::THRESH_BINARY);
+		cv::imshow("chess", cam_onprojd);
 
+		cv::waitKey(0);
 		cv::Size chess_sz = cv::Size(checkerBoard.w-1, checkerBoard.h-1);
-		if (!cv::findChessboardCorners(proj_chess, chess_sz, corners)) {
+		cout << chess_sz << endl;
+		corners.clear();
+		if (!cv::findChessboardCorners(cam_onprojd, chess_sz, corners)) {
 			printf("Failed to find chessboardcorners in PROJ...\n");
 			return;
 		}
@@ -390,6 +399,8 @@ public:
 			fscanf(fp, "%d\n", &proj_chess_w);
 			fscanf(fp, "%d\n", &proj_chess_h);
 			cv::Size chess_sz = cv::Size(proj_chess_w, proj_chess_h);
+
+
 			if (!cv::findChessboardCorners(proj_chess, chess_sz, corners)) {
 				printf("Failed to find chessboardcorners in PROJ...\n");
 				continue;
@@ -508,8 +519,10 @@ public:
 				cv::Mat  img_proj = cv::Mat(proj_height, proj_width, CV_8UC1, cv::Scalar::all(255));
 				cv::Mat img_display_proj = cv::Mat(proj_height, proj_width, CV_8UC3);
 				cv::Mat img_proj_offblack = cv::Mat(proj_height, proj_width, CV_8UC1, cv::Scalar::all(0));
+				cv::Mat img_proj_white = cv::Mat(proj_height, proj_width, CV_8UC1, cv::Scalar::all(255));
 				cv::Mat img_proj_homography = cv::Mat(proj_height, proj_width, CV_8UC1, cv::Scalar::all(0));
 				bool proj_offblack_flag = false;
+				bool proj_white_flag = false;
 				bool proj_calibration_flag = false;
 		#ifdef PROJECTOR
 				HighSpeedProjector proj;
@@ -529,6 +542,7 @@ public:
 				cv::createTrackbar("チェックのサイズ", "checkerBoard", &checkerBoard.size,100, this->onTrackbarChanged,(void*)this);
 				cv::createTrackbar("中心x座標", "checkerBoard", &checkerBoard.center.x,1024, this->onTrackbarChanged, (void*)this);
 				cv::createTrackbar("中心y座標", "checkerBoard", &checkerBoard.center.y,768, this->onTrackbarChanged, (void*)this);
+				cv::createTrackbar("tvalue", "checkerBoard", &tvalue,255);
 #pragma endregion
 
 
@@ -588,21 +602,15 @@ public:
 					while (thread_project_flag) {
 						WaitForSingleObject(event_process, INFINITE);
 		#ifdef PROJECTOR
-						if (!proj_calibration_flag) {
+
 								if (!proj_offblack_flag) {
 									proj.send_image_8bit(img_proj.data);
 								}
 								else {
 									proj.send_image_8bit(img_proj_offblack.data);
 								}
-						}
-						else {
-							img_proj_homography = cv::Scalar(0);
-							for (int i = 0; i < 4; i++) {
-								cv::circle(img_proj_homography, cv::Point2f(homography_proj[i][0], homography_proj[i][1]), 3, cv::Scalar(255), -1);
-							}
-							proj.send_image_8bit(img_proj_homography.data);
-						}
+						
+						
 		#endif
 						thread_project_cnt++;
 						SetEvent(event_project);
@@ -652,16 +660,8 @@ public:
 				printf("Preparing finish...\n");
 				int key = 0;
 				while ((key = cv::waitKey(1)) != 'q') {
-					if (key == 'h') {
-						proj_calibration_flag = true;
-		#ifdef CAMERA
-						cam.captureFrame(img_cam.data);
-						//ここほんとに必要？
-						calib.Calibrate(img_cam, img_cam);
-		#endif
-						proj_calibration_flag = false;
-					}
-					else if (key == 'b') {
+					
+					if (key == 'b') {
 						proj_offblack_flag = !proj_offblack_flag;
 					}
 					else if (key == '1') {
@@ -719,6 +719,7 @@ public:
 					}
 					img_render.copyTo(img_proj);
 					img_render.copyTo(img_display_proj);
+					img_cam.copyTo(img_display_cam);
 					//cv::cvtColor(img_render, img_display_proj, cv::COLOR_GRAY2RGB);
 					//cv::imshow("img_display_cam", img_display_cam);
 					//cv::circle(img_display_proj, cv::Point(486, 439), 10, cv::Scalar(200, 0, 0));

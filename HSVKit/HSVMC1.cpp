@@ -32,7 +32,7 @@ void HSVMC1::connect(int setMode) {
 		ClCloseCamera(cameraHandle);
 	}
 
-	result = ClSetCameraParam(cameraHandle, CLP_ANALOGGAIN, 50000);
+	result = ClSetCameraParam(cameraHandle, CLP_ANALOGGAIN, 65535);
 	if (result == FALSE)
 	{
 		printf_s("Failed to set analog gain.\r\n");
