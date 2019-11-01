@@ -6,8 +6,8 @@
 using namespace std;
 
 
-//#define CAMERA
-//#define PROJECTOR
+#define CAMERA
+#define PROJECTOR
 enum CaptureMode {
 	LIGHT = 0,
 	NOPROJ = 1,
@@ -41,19 +41,17 @@ void checkerMake(int board_w, int board_h, int size, cv::Mat& dst) {
 	}
 }
 
-void calibrate(int n_boards = 0, float image_sf = 0.5f, float delay = 1.f, int board_h = 0, int board_w = 0) {
+void calibrate(int n_boards = 0, float image_sf = 0.5f, float delay = 1.f, int board_h = 0, int board_w = 0,int cam_width=648,int cam_height=474,int mode=7) {
 	int board_n = board_w * board_h;
 	cv::Size board_sz = cv::Size(board_w, board_h);
 
 #pragma region HSC Open
 	HSVMC1 cam;
-	int cam_width = 648;
-	int cam_height = 474;
-
+	
 
 	cv::Mat img_display_cam = cv::Mat(cam_height, cam_width, CV_8UC3);
 
-	cam.connect(7);
+	cam.connect(mode);
 
 
 	cam.start();
@@ -134,12 +132,19 @@ void calibrate(int n_boards = 0, float image_sf = 0.5f, float delay = 1.f, int b
 
 	std::cout << "*** DONE! \n\nReprojection error is " << err <<
 		" \nStoring Intrinsics.xml \n\n";
-
-	cv::FileStorage fs("intrinsics.xml", cv::FileStorage::WRITE);
-
-	fs << "image_width" << image_size.width << "image_height" << image_size.height << "camera_matrix" <<
-		intrinsic_matrix << "cam_distortion" << cam_distortion;
-	fs.release();
+	if (mode == 7) {
+		cv::FileStorage fs("intrinsics.xml", cv::FileStorage::WRITE);
+		fs << "image_width" << image_size.width << "image_height" << image_size.height << "camera_matrix" <<
+			intrinsic_matrix << "cam_distortion" << cam_distortion;
+		fs.release();
+	}
+	else {
+		cv::FileStorage fs("intrinsics_large_cam.xml", cv::FileStorage::WRITE);
+		fs << "image_width" << image_size.width << "image_height" << image_size.height << "camera_matrix" <<
+			intrinsic_matrix << "cam_distortion" << cam_distortion;
+		fs.release();
+	}
+	
 }
 
 
@@ -289,7 +294,7 @@ public:
 		static_cast<Calibration*>(userdata)->thread_project_flag = false;
 		
 		d.copyTo(static_cast<Calibration*>(userdata)->img_render(cv::Rect(c.center.x - c.w * c.size / 2-1, c.center.y - c.h * c.size / 2-1, c.w * c.size, c.h * c.size)));
-		cv::rectangle(static_cast<Calibration*>(userdata)->img_render, cv::Rect(c.center.x - c.w * c.size / 2 -5, c.center.y - c.h * c.size / 2 -5, c.w * c.size+5, c.h * c.size+5), cv::Scalar(255, 255, 255), 5);
+		cv::rectangle(static_cast<Calibration*>(userdata)->img_render, cv::Rect(c.center.x - c.w * c.size / 2 -10, c.center.y - c.h * c.size / 2 -10, c.w * c.size+20, c.h * c.size+20), cv::Scalar(255, 255, 255), 20);
 		static_cast<Calibration*>(userdata)->thread_capture_flag = true;
 		static_cast<Calibration*>(userdata)->thread_process_flag = true;
 		static_cast<Calibration*>(userdata)->thread_project_flag = true;
@@ -298,7 +303,7 @@ public:
 
 	}
 
-	void corner_detect() {
+	virtual void corner_detect() {
 
 		cv::Mat cam_noprojd,cam_onprojd;
 		vector < cv::Point2d> corners;
@@ -321,14 +326,15 @@ public:
 		Undistort(cam_noproj, cam_noprojd);
 		cv::absdiff(cam_onprojd, cam_noprojd, proj_chess);
 		//cv::equalizeHist(cam_onprojd, cam_onprojd);
-		cv::threshold(cam_onprojd, cam_onprojd, tvalue, 250, cv::THRESH_BINARY);
-		cv::imshow("chess", cam_onprojd);
+		//cv::threshold(cam_onprojd, cam_onprojd, tvalue, 250, cv::THRESH_BINARY);
+		//cv::bitwise_not(cam_onprojd, cam_onprojd);
+		cv::imshow("chess", proj_chess);
 
-		cv::waitKey(0);
+		cv::waitKey(1);
 		cv::Size chess_sz = cv::Size(checkerBoard.w-1, checkerBoard.h-1);
 		cout << chess_sz << endl;
 		corners.clear();
-		if (!cv::findChessboardCorners(cam_onprojd, chess_sz, corners)) {
+		if (!cv::findChessboardCorners(proj_chess, chess_sz, corners,cv::CALIB_CB_ADAPTIVE_THRESH+ cv::CALIB_CB_NORMALIZE_IMAGE+cv::CALIB_CB_FILTER_QUADS+cv::CALIB_CB_FAST_CHECK)) {
 			printf("Failed to find chessboardcorners in PROJ...\n");
 			return;
 		}
@@ -361,7 +367,7 @@ public:
 		pic_count++;
 
 		printf("Succeed in %d th corner detect!\n", pic_count);
-		
+		cv::destroyWindow("chess");
 		
 	}
 
@@ -485,12 +491,12 @@ public:
 
 		#ifdef CAMERA
 				HSVMC1 cam;
-				cam.connect(7);
+				cam.connect(2);
 
 				cam.start();
 		#endif
-				int cam_width = 648;
-				int cam_height = 474;
+				int cam_width = 1296;
+				int cam_height = 968;
 				//int cam_width = 648;
 				//int cam_height = 226;
 				//float cam_fps = 2000.0f;
@@ -745,29 +751,7 @@ public:
 
 		#pragma region calibration
 
-				if (pic_count > 0) {
-					std::cout << "\n\n*** CALIBLATING CAMERA...\n" << std::endl;
-
-					cv::Mat intrinsic_matrix, cam_distortion;
-					double err = cv::calibrateCamera(
-						objPoints,
-						imgPoints,
-						cv::Size(proj_width, proj_height),
-						intrinsic_matrix,
-						cam_distortion,
-						cv::noArray(),
-						cv::noArray(),
-						cv::CALIB_ZERO_TANGENT_DIST | cv::CALIB_FIX_PRINCIPAL_POINT);
-
-					std::cout << "*** DONE! \n\nReprojection error is " << err <<
-						" \nStoring Intrinsics.xml \n\n";
-
-					cv::FileStorage fs("intrinsics_proj.xml", cv::FileStorage::WRITE);
-
-					fs << "image_width" << image_size.width << "image_height" << image_size.height << "camera_matrix" <<
-						intrinsic_matrix << "cam_distortion" << cam_distortion;
-					fs.release();
-				}
+				
 		#pragma endregion 
 
 		#pragma region Thread Close
@@ -795,6 +779,29 @@ public:
 				proj.destruct_process_light();
 		#pragma endregion
 		#endif
+				if (pic_count > 0) {
+					std::cout << "\n\n*** CALIBLATING CAMERA...\n" << std::endl;
+
+					cv::Mat intrinsic_matrix, cam_distortion;
+					double err = cv::calibrateCamera(
+						objPoints,
+						imgPoints,
+						cv::Size(proj_width, proj_height),
+						intrinsic_matrix,
+						cam_distortion,
+						cv::noArray(),
+						cv::noArray(),
+						cv::CALIB_ZERO_TANGENT_DIST | cv::CALIB_FIX_PRINCIPAL_POINT);
+
+					std::cout << "*** DONE! \n\nReprojection error is " << err <<
+						" \nStoring Intrinsics.xml \n\n";
+
+					cv::FileStorage fs("intrinsics_proj.xml", cv::FileStorage::WRITE);
+
+					fs << "image_width" << image_size.width << "image_height" << image_size.height << "camera_matrix" <<
+						intrinsic_matrix << "cam_distortion" << cam_distortion;
+					fs.release();
+				}
 
 	}
 

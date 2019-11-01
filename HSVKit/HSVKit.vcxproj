@@ -145,6 +145,7 @@
   <ItemGroup>
     <ClInclude Include="calibration.h" />
     <ClInclude Include="checkerMake.h" />
+    <ClInclude Include="circleCalibration.h" />
     <ClInclude Include="common.h" />
     <ClInclude Include="dataStorage.h" />
     <ClInclude Include="EstimateOffset.h" />

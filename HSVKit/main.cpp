@@ -8,12 +8,12 @@
 
 int main() {
 	//mainloop();
-	//calibrate(30, 1.0f, 1.0f, 7, 10);
+	//calibrate(30, 1.0f, 1.0f, 7, 10,1296,968,2);
 
 
 
 	Calibration calib;
-	calib.Load_matrix("intrinsics.xml", 648, 474);
+	calib.Load_matrix("intrinsics_large_cam.xml", 1296, 968);
 	calib.calibrate_projector(10, 7, 0.22f);
 
 

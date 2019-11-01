@@ -6,6 +6,7 @@ using namespace std;
 
 void HSVMC1::connect(int setMode) {
 	BOOL result;
+
 	cameraHandle = ClOpenCamera();
 	if (cameraHandle == NULL) {
 		cout << "Failed to open camera" << endl;
@@ -32,7 +33,7 @@ void HSVMC1::connect(int setMode) {
 		ClCloseCamera(cameraHandle);
 	}
 
-	result = ClSetCameraParam(cameraHandle, CLP_ANALOGGAIN, 65535);
+	result = ClSetCameraParam(cameraHandle, CLP_ANALOGGAIN,30000);
 	if (result == FALSE)
 	{
 		printf_s("Failed to set analog gain.\r\n");
@@ -42,13 +43,17 @@ void HSVMC1::connect(int setMode) {
 
 	/// カメラからの映像出力方式を設定
 	/// HSVSDK Host Appプログラミングガイド.pdf の53ページ参照
-	result = ClSetCameraParam(cameraHandle, CLP_IMAGEOUTPUTMODE, CLOUTPUTMODE_4BITDU);
-	if (result == FALSE)
-	{
-		printf_s("Failed to set image output mode to 4bit DU.\r\n");
-		getchar();
-		return;
+	if (mode == 7) {
+		result = ClSetCameraParam(cameraHandle, CLP_IMAGEOUTPUTMODE, CLOUTPUTMODE_4BITDU);
+		if (result == FALSE)
+		{
+			printf_s("Failed to set image output mode to 4bit DU.\r\n");
+			getchar();
+			return;
+		}
 	}
+
+	mode = setMode;
 
 }
 
@@ -82,9 +87,13 @@ void HSVMC1::captureFrame(unsigned char* dst) {
 				src += 1;
 			}
 			*/
-			
-			BOOL tmpResult = ClImageHelper_Convert4bitMonoTo8bit(&(cuData->bitmapTop), dst, cuData->width, cuData->height);
-
+			if (mode == 7) {
+				BOOL tmpResult = ClImageHelper_Convert4bitMonoTo8bit(&(cuData->bitmapTop), dst, cuData->width, cuData->height);
+			}
+			else if (mode == 2) {
+				memcpy(dst, &(cuData->bitmapTop), sizeof(unsigned char) * cuData->width * cuData->height);
+				dst = &(cuData->bitmapTop);
+			}
 			ClFreeMemory(cuData);
 
 		}

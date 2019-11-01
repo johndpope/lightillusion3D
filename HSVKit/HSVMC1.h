@@ -19,11 +19,11 @@
 class HSVMC1 {
 public:
 	CameraHandle cameraHandle;
-
+	int mode;
 
 public:
 
-	void connect(int setMode = 7);
+	void connect(int setMode );
 	void start();
 
 	void captureFrame(unsigned char *dst);
