@@ -165,8 +165,8 @@ private:
 	cv::Mat cam_noproj;
 	cv::Mat cam_onproj;
 
-	vector < vector < cv::Point3d>> objPoints;
-	vector<vector<cv::Point2d>> imgPoints;
+	vector < vector < cv::Point3f>> objPoints;
+	vector<vector<cv::Point2f>> imgPoints;
 
 
 	int pic_count = 0;
@@ -306,7 +306,7 @@ public:
 	virtual void corner_detect() {
 
 		cv::Mat cam_noprojd,cam_onprojd;
-		vector < cv::Point2d> corners;
+		vector < cv::Point2f> corners;
 		if (!cv::findChessboardCorners(cam_light, board_sz, corners)) {
 			printf("Failed to find chessboardcorners in LIGHT...\n");
 			return;
@@ -340,15 +340,17 @@ public:
 		}
 
 		cv::Mat cinv = cam_matrix.inv();
-		vector<cv::Point3d> v;
+		vector<cv::Point3f> v;
 		//•½–Ê‹t“Š‰e
 		for (int i = 0; i < corners.size(); i++) {
 			cv::Mat tmp = (cv::Mat_<double>(3,1)<< corners[i].x, corners[i].y, 1.0f);
 			tmp = cinv * tmp;
 
+			cout << tmp << endl;
+
 			double t = (n.dot(tvec)) / (n.dot(tmp));
 			tmp = t * tmp;
-			cv::Point3d x = cv::Point3d(tmp.at<double>(0), tmp.at<double>(1), tmp.at<double>(2));
+			cv::Point3f x = cv::Point3f(tmp.at<double>(0), tmp.at<double>(1), tmp.at<double>(2));
 			v.push_back(x);
 		}
 
@@ -372,10 +374,12 @@ public:
 	}
 
 	void calibrate_projector_read() {
-		fp=fopen("Calibration / chessSize.txt", "r");
+		vector < vector < cv::Point3f>> objPoints;
+		vector<vector<cv::Point2f>> imgPoints;
+		fp=fopen("Calibration/chessSize.txt", "r");
 		while (1) {
 			string cam = "Calibration/img_cam/" + to_string(pic_count) + ".png";
-			string proj = "Calibration/img_cam/" + to_string(pic_count) + ".png";
+			string proj = "Calibration/img_proj/" + to_string(pic_count) + ".png";
 			string render = "Calibration/img_render/" + to_string(pic_count) + ".png";
 			if (!checkFileExistence(cam) || !checkFileExistence(proj)||!checkFileExistence(render)) {
 				printf("File dosen't exist\n");
@@ -384,17 +388,19 @@ public:
 			pic_count++;
 
 			cv::Mat proj_chess;
-			cam_light=cv::imread(cam, 0);
-			proj_chess = cv::imread(proj, 0);
-			img_render= cv::imread(render, 0);
+			cam_light=cv::imread(cam);
+			proj_chess = cv::imread(proj);
+			img_render= cv::imread(render);
 			Undistort(proj_chess, proj_chess);
 
-			vector < cv::Point2d> corners;
+
+			
+			vector < cv::Point2f> corners;
 			if (!cv::findChessboardCorners(cam_light, board_sz, corners)) {
 				printf("Failed to find chessboardcorners in LIGHT...\n");
 				continue;
 			}
-
+			
 			//•½–ÊŽ®
 			cv::Mat rvec, tvec;
 			cv::solvePnP(boardPoints, corners, cam_matrix, cam_distortion, rvec, tvec);
@@ -402,29 +408,38 @@ public:
 			cv::Mat R;
 			cv::Rodrigues(rvec, R);
 			n = R * n;
+			//cout << tvec << endl;
 			fscanf(fp, "%d\n", &proj_chess_w);
 			fscanf(fp, "%d\n", &proj_chess_h);
 			cv::Size chess_sz = cv::Size(proj_chess_w, proj_chess_h);
 
-
-			if (!cv::findChessboardCorners(proj_chess, chess_sz, corners)) {
+			if (!cv::findChessboardCorners(proj_chess, chess_sz, corners, cv::CALIB_CB_ADAPTIVE_THRESH + cv::CALIB_CB_NORMALIZE_IMAGE + cv::CALIB_CB_FILTER_QUADS + cv::CALIB_CB_FAST_CHECK)) {
 				printf("Failed to find chessboardcorners in PROJ...\n");
 				continue;
 			}
 
+			cv::drawChessboardCorners(proj_chess, chess_sz, corners, true);
+			cv::imshow("lightt", proj_chess);
+			cv::waitKey(1);
 			cv::Mat cinv = cam_matrix.inv();
-			vector<cv::Point3d> v;
+			vector<cv::Point3f> v;
+			cv::Point3f o;
 			//•½–Ê‹t“Š‰e
 			for (int i = 0; i < corners.size(); i++) {
 				cv::Mat tmp = (cv::Mat_<double>(3, 1) << corners[i].x, corners[i].y, 1.0f);
 				tmp = cinv * tmp;
-
+				//cout << tmp << endl;
 				double t = (n.dot(tvec)) / (n.dot(tmp));
 				tmp = t * tmp;
-				cv::Point3d x = cv::Point3d(tmp.at<double>(0), tmp.at<double>(1), tmp.at<double>(2));
-				v.push_back(x);
+				cout << tmp << endl;
+				//cv::waitKey(0);
+				cv::Point3f x = cv::Point3f((float)tmp.at<double>(0), (float)tmp.at<double>(1), (float)tmp.at<double>(2));
+				if (i == 0) {
+					o = x;
+				}
+				v.push_back(x-o);
 			}
-
+			corners.clear();
 			if (!cv::findChessboardCorners(img_render, chess_sz, corners)) {
 				printf("Failed to find chessboardcorners in PROJIMG...\n");
 				continue;
@@ -432,22 +447,26 @@ public:
 
 			objPoints.push_back(v);
 			imgPoints.push_back(corners);
+			if (pic_count == 1) {
+				break;
+			}
 		}
+		
 
 		if (pic_count > 0) {
 			std::cout << "\n\n*** CALIBLATING CAMERA...\n" << std::endl;
 			int proj_width = 1024;
 			int proj_height = 768;
-			cv::Mat intrinsic_matrix, cam_distortion;
+			cout << objPoints[0] << endl;
+			cv::Mat intrinsic_matrix, distortion;
 			double err = cv::calibrateCamera(
 				objPoints,
 				imgPoints,
-				cv::Size(proj_width, proj_height),
+				cv::Size(1024, 768),
 				intrinsic_matrix,
-				cam_distortion,
+				distortion,
 				cv::noArray(),
-				cv::noArray(),
-				cv::CALIB_ZERO_TANGENT_DIST | cv::CALIB_FIX_PRINCIPAL_POINT);
+				cv::noArray());
 
 			std::cout << "*** DONE! \n\nReprojection error is " << err <<
 				" \nStoring Intrinsics.xml \n\n";
@@ -455,7 +474,7 @@ public:
 			cv::FileStorage fs("intrinsics_proj.xml", cv::FileStorage::WRITE);
 
 			fs << "image_width" << image_size.width << "image_height" << image_size.height << "camera_matrix" <<
-				intrinsic_matrix << "cam_distortion" << cam_distortion;
+				intrinsic_matrix << "cam_distortion" << distortion;
 			fs.release();
 		}
 		fclose(fp);
@@ -470,7 +489,14 @@ public:
 	board_size‚Íƒ`ƒFƒXƒ{[ƒh‚ÌŠÔŠu‚ðƒ[ƒgƒ‹’PˆÊ‚ÅŽw’è
 	*/
 	void calibrate_projector(int board_w = 0, int board_h = 0,double board_size=0,bool read=false) {
-
+		board_n = board_h * board_w;
+		board_sz = cv::Size(board_w, board_h);
+		for (int j = 0; j < board_h; j++) {
+			for (int i = 0; i < board_w; i++) {
+				cv::Point3d tmp = cv::Point3d((double)i * board_size, (double)j * board_size, 0.0);
+				boardPoints.push_back(tmp);
+			}
+		}
 		if (read) {
 			calibrate_projector_read();
 			return;
@@ -478,14 +504,8 @@ public:
 
 		fp = fopen("Calibration/chessSize.txt", "w");
 
-		for (int j = 0; j < board_h; j++) {
-			for (int i = 0; i < board_w; i++) {
-				cv::Point3d tmp = cv::Point3d(-(double)i * board_size, (double)j * board_size, 0.0);
-				boardPoints.push_back(tmp);
-			}
-		}
-		board_n = board_h * board_w;
-		board_sz = cv::Size(board_w, board_h);
+		
+		
 
 		#pragma region HSC Open
 
@@ -826,12 +846,12 @@ public:
 			img_render = cv::imread(render, 0);
 			//Undistort(proj_chess, proj_chess);
 
-			vector <cv::Point2d> corners;
+			vector <cv::Point2f> corners;
 			if (!cv::findChessboardCorners(cam_light, board_sz, corners)) {
 				printf("Failed to find chessboardcorners in LIGHT...\n");
 				continue;
 			}
-
+			
 			//•½–ÊŽ®
 			cv::Mat rvec, tvec;
 			cv::solvePnP(boardPoints, corners, cam_matrix, cam_distortion, rvec, tvec);
@@ -848,7 +868,7 @@ public:
 			}
 
 			cv::Mat cinv = cam_matrix.inv();
-			vector<cv::Point3d> v;
+			vector<cv::Point3f> v;
 			//•½–Ê‹t“Š‰e
 			for (int i = 0; i < corners.size(); i++) {
 				cv::Mat tmp = (cv::Mat_<double>(3, 1) << corners[i].x, corners[i].y, 1.0f);
@@ -856,7 +876,7 @@ public:
 
 				double t = (n.dot(tvec)) / (n.dot(tmp));
 				tmp = t * tmp;
-				cv::Point3d x = cv::Point3d(tmp.at<double>(0), tmp.at<double>(1), tmp.at<double>(2));
+				cv::Point3f x = cv::Point3f(tmp.at<double>(0), tmp.at<double>(1), tmp.at<double>(2));
 				v.push_back(x);
 			}
 
