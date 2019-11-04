@@ -58,10 +58,12 @@ __global__ void d_spring(unsigned int num_points, float(*realpoints)[3], float(*
 		vel[index][i] *=0.99;
 
 	}
+	/*
 	//virtualpoints[index][2] *= -1.0f;
 	if (index == 0) {
 		dbg[0] = 2.0f;
 	}
+	*/
 	
 }
 
@@ -111,9 +113,9 @@ void launchVertexProcess(unsigned int NUM_POINTS,float (*virtualpoints)[3],float
 	d_spring <<< grid, block >>> (NUM_POINTS,d_realpoints,virtualpoints,d_v,dt, d_MV,d_dbg);
 
 	
-	cudaMemcpy(h_dbg, d_dbg, sizeof(float), cudaMemcpyDeviceToHost);
-	cudaMemcpy(h_v, d_v, NUM_POINTS * 3 * sizeof(float), cudaMemcpyDeviceToHost);
-	printf("[%.10f]\n", h_dbg[0]);
+	//cudaMemcpy(h_dbg, d_dbg, sizeof(float), cudaMemcpyDeviceToHost);
+	//cudaMemcpy(h_v, d_v, NUM_POINTS * 3 * sizeof(float), cudaMemcpyDeviceToHost);
+	//printf("[%.10f]\n", h_dbg[0]);
 	//std::cout << h_realpoints[0][0] << std::endl;
 
 	//printf("finish\n");
