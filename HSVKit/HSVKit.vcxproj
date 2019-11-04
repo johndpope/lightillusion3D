@@ -186,6 +186,7 @@
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="cudaTest.cu" />
+    <CudaCompile Include="VertexProcess.cu" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -164,5 +164,8 @@
     <CudaCompile Include="cudaTest.cu">
       <Filter>CUDA</Filter>
     </CudaCompile>
+    <CudaCompile Include="VertexProcess.cu">
+      <Filter>CUDA</Filter>
+    </CudaCompile>
   </ItemGroup>
 </Project>

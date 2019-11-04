@@ -83,3 +83,7 @@
 
 #include"VertexArray.h"
 
+#include<cuda_runtime.h>
+#include<Windows.h>
+#include<cuda.h>
+#include <device_launch_parameters.h>]

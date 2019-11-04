@@ -208,7 +208,7 @@ public:
 	~GLkit() {
 	}
 
-	void loadObj(char* fileName = NULL) {
+	virtual void loadObj(char* fileName = NULL) {
 		model.loadObj(fileName);
 		if (fileName != NULL) {
 			modelFlag = true;

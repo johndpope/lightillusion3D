@@ -1,6 +1,8 @@
 #pragma once
 #include"GLKit.h"
 
+extern void launchVertexProcess(unsigned int NUM_POINTS, float(*d_virtualpoints)[3], float dt, glm::mat4& M);
+extern void initField(unsigned int num_points,vector<float>& position);
 class GLkitD :public GLkit {
 private:
 	Shader oshader;
@@ -9,11 +11,31 @@ private:
 	GLuint renderedTexture;
 	GLuint depthrenderbuffer;
 	GLenum DrawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
+
+	VertexArray virtualVertexArray;
+
+
+	float(*d_realpoints)[3];
+	float(*d_virtualpoints)[3];
+
 public:
 
 	GLkitD(int window_w, int window_h, cv::Mat H) :
 		GLkit(window_w, window_h, H) {
 
+	}
+
+	void loadObj(char* fileName = NULL) {
+		model.loadObj(fileName);
+		if (fileName != NULL) {
+			modelFlag = true;
+		}
+		vertexArray.load(model.position, model.normal, model.texcoord, static_cast<unsigned>(model.position.size()) / 3);
+		//vertexArray.SetActive();
+
+		virtualVertexArray.load(model.position, model.normal, model.texcoord, static_cast<unsigned>(model.position.size()) / 3);
+		//vertexArray.SetActive();
+		initField(model.position.size() / 3,model.position);
 	}
 
 	void setup() {
@@ -127,6 +149,16 @@ public:
 		glClearColor(0, 0.0, 0, 0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+		//cudaGraphicsMapResources(1, &(vertexArray.vbo_res), 0);
+		cudaGraphicsMapResources(1, &(virtualVertexArray.vbo_res), 0);
+
+		//cudaGraphicsResourceGetMappedPointer((void**)&d_realpoints, NULL, vertexArray.vbo_res);
+		cudaGraphicsResourceGetMappedPointer((void**)&d_virtualpoints, NULL, virtualVertexArray.vbo_res);
+
+		launchVertexProcess(model.position.size() / 3, d_virtualpoints, 0.1, M);
+
+		//cudaGraphicsUnmapResources(1, &(vertexArray.vbo_res), 0);
+		cudaGraphicsUnmapResources(1, &(virtualVertexArray.vbo_res), 0);
 		//Rendering
 		vertexArray.SetActive();
 
@@ -136,7 +168,7 @@ public:
 			0, 0, 1, 0,
 			0, 0, 0, 1);
 		shader.SetActive();
-		shader.SetMatrixUniform("MVP", homography * RotX * projection * viewMat * M);
+		shader.SetMatrixUniform("MVP",  RotX * projection * viewMat * M);
 		//shader.SetMatrixUniform("MVP", RotX*projection * viewMat * M);
 
 		//glm::vec4 a = homography*projection * viewMat * M * glm::vec4(0.0, 0.0, 0.0, 1.0);
@@ -147,25 +179,26 @@ public:
 		//glDrawElements(GL_TRIANGLES, model.varray.size()/8, GL_UNSIGNED_INT, nullptr);
 		glDrawArrays(GL_TRIANGLES, 0, model.position.size() / 3);
 		
+
 		//glClearColor(0, 0.0, 0, 0);
 		//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		
-		for (int i = 0; i < 4; i++) {
-			input_xyz[3 * i + 0] -= 5.0f;
-		}
-		
-		mvMatrix.change3Dpoint(objpoints, input_xyz, M, 4);
 
+		virtualVertexArray.SetActive();
+		//mvMatrix.change3Dpoint(objpoints, input_xyz, M, 4);
+		//shader.SetMatrixUniform("MVP", homography * RotX * projection * viewMat );
 		oshader.SetActive();
-		oshader.SetMatrixUniform("MVP", homography * RotX * projection * viewMat * M);
+		glm::mat4 RotZ = glm::mat4(1, 0, 0, 0,
+			0, 1, 0, 0,
+			0, 0, 1, 0,
+			0, 0, 0, -1);
+		oshader.SetMatrixUniform("MVP",RotX* projection * viewMat);
+		oshader.SetMatrixUniform("M",RotX* projection * viewMat*M);
 		//oshader.SetMatrixUniform("MVP", RotX * projection * viewMat * M);
 		oshader.SetTextureUniform("renderedTexture", renderedTexture);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glDrawArrays(GL_TRIANGLES, 0, model.position.size() / 3);
-		
-		for (int i = 0; i < 4; i++) {
-			input_xyz[3 * i + 0] += 5.0f;
-		}
+
 	
 		if (img!= NULL && img->cols == render_size[0] && img->rows == render_size[1]) {
 			//glReadPixels(0, 0, render_size[0], render_size[1], GL_RGB, GL_UNSIGNED_BYTE, img->data);

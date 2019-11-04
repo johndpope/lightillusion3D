@@ -44,6 +44,8 @@ void VertexArray::load(vector<float>& position, vector<float>& normal, vector<fl
 	glEnableVertexAttribArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (GLubyte*)NULL);
+
+	
 	// Normal is 3 floats
 	glEnableVertexAttribArray(1);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
@@ -52,11 +54,16 @@ void VertexArray::load(vector<float>& position, vector<float>& normal, vector<fl
 	glEnableVertexAttribArray(2);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo[2]);
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (GLubyte*)NULL);
+
+	glBindBuffer(GL_ARRAY_BUFFER,0);
+	cudaGraphicsGLRegisterBuffer(&vbo_res, vbo[0], cudaGraphicsRegisterFlagsNone);
+
+
 }
 
 VertexArray::~VertexArray()
 {
-	
+	cudaGraphicsUnregisterResource(vbo_res);
 	glDeleteBuffers(3, vbo);
 	glDeleteVertexArrays(1, &vao);
 }
