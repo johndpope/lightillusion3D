@@ -25,6 +25,9 @@
     <Filter Include="ソース ファイル\Shader">
       <UniqueIdentifier>{27e95dce-1080-4a05-9039-83e62d776a3e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="CUDA">
+      <UniqueIdentifier>{e607dfa2-b7a0-4487-8f14-06e174c994e4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -156,5 +159,10 @@
     <None Include="Shader\override.vert">
       <Filter>ソース ファイル\Shader</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <CudaCompile Include="cudaTest.cu">
+      <Filter>CUDA</Filter>
+    </CudaCompile>
   </ItemGroup>
 </Project>

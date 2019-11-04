@@ -145,7 +145,7 @@ public:
 		glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
 		glViewport(0, 0, render_size[0], render_size[1]);
 		//glDrawElements(GL_TRIANGLES, model.varray.size()/8, GL_UNSIGNED_INT, nullptr);
-		glDrawArrays(GL_TRIANGLES, 0, model.varray.size() / 8);
+		glDrawArrays(GL_TRIANGLES, 0, model.position.size() / 3);
 		
 		//glClearColor(0, 0.0, 0, 0);
 		//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -161,7 +161,7 @@ public:
 		//oshader.SetMatrixUniform("MVP", RotX * projection * viewMat * M);
 		oshader.SetTextureUniform("renderedTexture", renderedTexture);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		glDrawArrays(GL_TRIANGLES, 0, model.varray.size() / 8);
+		glDrawArrays(GL_TRIANGLES, 0, model.position.size() / 3);
 		
 		for (int i = 0; i < 4; i++) {
 			input_xyz[3 * i + 0] += 5.0f;

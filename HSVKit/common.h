@@ -1,5 +1,10 @@
 #pragma once
 
+#pragma region flags
+//#define CAMERA
+//#define PROJECTOR
+#pragma endregion
+
 #ifdef _DEBUG
 #define SUFFIX_EXT "d.lib"
 #else
@@ -77,3 +82,4 @@
 #include"springSimulate.h"
 
 #include"VertexArray.h"
+

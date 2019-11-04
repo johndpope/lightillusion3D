@@ -6,8 +6,7 @@
 using namespace std;
 
 
-#define CAMERA
-#define PROJECTOR
+
 enum CaptureMode {
 	LIGHT = 0,
 	NOPROJ = 1,

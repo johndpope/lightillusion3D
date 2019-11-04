@@ -8,6 +8,10 @@
 
 #pragma once
 #include<vector>
+#include <GLFW/gg.h>
+#include <GLFW/glfw3.h>
+using namespace std;
+
 class VertexArray
 {
 public:
@@ -15,7 +19,7 @@ public:
 	~VertexArray();
 
 	void SetActive();
-	void load(float* verts, unsigned int numVerts);
+	void load(vector<float>& position, vector<float>& normal, vector<float>& texcoord, unsigned int numVerts);
 	unsigned int GetNumIndices() const { return mNumIndices; }
 	unsigned int GetNumVerts() const { return mNumVerts; }
 private:
@@ -30,5 +34,8 @@ private:
 	// OpenGL ID of the vertex array object
 	unsigned int mVertexArray;
 
-
+	GLuint vao;
+	//pos=0,normal=1,texcoord=2
+	GLuint vbo[3];
+	
 };

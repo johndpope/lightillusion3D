@@ -11,21 +11,27 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/string_cast.hpp>
 
+#include<cuda_runtime.h>
+
+#include<cuda.h>
+#include<cuda_gl_interop.h>
 #include"pnpchange.h"
 //Only for triangles
 class Model {
 public:
 	std::vector<Eigen::Vector3f> v_p;  //頂点座標
-	std::vector<Eigen::Vector3f> v_pp;  //頂点座標
+
 	std::vector<Eigen::Vector3f> v_n;  //頂点法線
-	std::vector<Eigen::Vector3f> v_nn;  //頂点法線
+
 	std::vector<Eigen::Vector2f> v_t;  //頂点tex座標
-	std::vector<Eigen::Vector2f> v_tt;  //頂点tex座標
+
 	std::vector<unsigned int> f_i;  //面頂点座標インデックス
 	std::vector<unsigned int> f_n;
 	std::vector<unsigned int> f_t;
 
-	std::vector<float> varray;
+	std::vector<float> position;
+	std::vector<float> normal;
+	std::vector<float> texcoord;
 	
 
 
@@ -81,18 +87,15 @@ public:
 				}
 			}
 			for(int i=0;i<f_n.size();i++){
-				v_nn.push_back(v_n[f_n[i]]);
-				v_pp.push_back(v_p[f_i[i]]);
-				v_tt.push_back(v_t[f_t[i]]);
 
-				varray.push_back(v_p[f_i[i]][0]);
-				varray.push_back(v_p[f_i[i]][1]);
-				varray.push_back(v_p[f_i[i]][2]);
-				varray.push_back(v_n[f_n[i]][0]);
-				varray.push_back(v_n[f_n[i]][1]);
-				varray.push_back(v_n[f_n[i]][2]);
-				varray.push_back(v_t[f_t[i]][0]);
-				varray.push_back(v_t[f_t[i]][1]);
+				position.push_back(v_p[f_i[i]][0]);
+				position.push_back(v_p[f_i[i]][1]);
+				position.push_back(v_p[f_i[i]][2]);
+				normal.push_back(v_n[f_n[i]][0]);
+				normal.push_back(v_n[f_n[i]][1]);
+				normal.push_back(v_n[f_n[i]][2]);
+				texcoord.push_back(v_t[f_t[i]][0]);
+				texcoord.push_back(v_t[f_t[i]][1]);
 			
 			}
 			
@@ -210,7 +213,7 @@ public:
 		if (fileName != NULL) {
 			modelFlag = true;
 		}
-		vertexArray.load(model.varray.data(), static_cast<unsigned>(model.varray.size())/8);
+		vertexArray.load(model.position,model.normal,model.texcoord, static_cast<unsigned>(model.position.size())/3);
 		vertexArray.SetActive();
 		
 		
@@ -342,7 +345,7 @@ public:
 			//cout << glm::to_string(a) << endl;
 
 			//glDrawElements(GL_TRIANGLES, model.varray.size()/8, GL_UNSIGNED_INT, nullptr);
-			glDrawArrays(GL_TRIANGLES, 0, model.varray.size()/8);
+			glDrawArrays(GL_TRIANGLES, 0, model.position.size()/3);
 		}
 		else {
 			//Initialize

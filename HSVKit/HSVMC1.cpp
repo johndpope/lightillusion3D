@@ -32,13 +32,23 @@ void HSVMC1::connect(int setMode) {
 		printf_s("Please Restart program to apply CLP_IMAGEMODE \r\n");
 		ClCloseCamera(cameraHandle);
 	}
-
-	result = ClSetCameraParam(cameraHandle, CLP_ANALOGGAIN,30000);
-	if (result == FALSE)
-	{
-		printf_s("Failed to set analog gain.\r\n");
-		getchar();
-		return;
+	if (mode == 2) {
+		result = ClSetCameraParam(cameraHandle, CLP_ANALOGGAIN, 30000);
+		if (result == FALSE)
+		{
+			printf_s("Failed to set analog gain.\r\n");
+			getchar();
+			return;
+		}
+	}
+	else if (mode == 7) {
+		result = ClSetCameraParam(cameraHandle, CLP_ANALOGGAIN, 50000);
+		if (result == FALSE)
+		{
+			printf_s("Failed to set analog gain.\r\n");
+			getchar();
+			return;
+		}
 	}
 
 	/// ƒJƒƒ‰‚©‚ç‚Ì‰f‘œo—Í•û®‚ğİ’è
