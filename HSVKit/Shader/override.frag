@@ -30,7 +30,7 @@ void main()
 
 
 
-	FragColor =(vec4(color,1.0)-bcolor)*0.4+0.2;
+	FragColor =(vec4(color,1.0)-bcolor)*0.2+0.2;
 	//FragColor=vec4(0.2f);
 	//FragColor=vec4(color,1.0)-bcolor;
 	//FragColor=vec4(color,1.0)+0.2f;

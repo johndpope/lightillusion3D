@@ -72,11 +72,6 @@ public:
 		//projection = glm::ortho(-view_fov * render_aspect, view_fov * render_aspect, -view_fov, view_fov, -50.0f, 50.0f);
 
 
-		//H.at<double>(1, 1) *= -1;
-		//H.at<double>(0, 1) = 0;
-		//H.at<double>(1, 0) = 0;
-		//mvMatrix.intrinsics_matrix = H * mvMatrix.intrinsics_matrix;
-
 		cameraFrustumRH(mvMatrix.intrinsics_matrix, cv::Size(648, 474), projection, 0.1, 100.0);
 		//cameraFrustumRH(mvMatrix.intrinsics_matrix, cv::Size(render_size[0],render_size[1]), projection, 0.1, 100.0);
 		//cout << to_string(projection) << endl;
@@ -149,15 +144,12 @@ public:
 		glClearColor(0.2, 0.2, 0.2,0.0 );
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		//cudaGraphicsMapResources(1, &(vertexArray.vbo_res), 0);
-		cudaGraphicsMapResources(1, &(virtualVertexArray.vbo_res), 0);
 
-		//cudaGraphicsResourceGetMappedPointer((void**)&d_realpoints, NULL, vertexArray.vbo_res);
+		cudaGraphicsMapResources(1, &(virtualVertexArray.vbo_res), 0);
 		cudaGraphicsResourceGetMappedPointer((void**)&d_virtualpoints, NULL, virtualVertexArray.vbo_res);
 
-		launchVertexProcess(model.position.size() / 3, d_virtualpoints, 0.1, M);
+		launchVertexProcess(model.position.size() / 3, d_virtualpoints, 0.033f, M);
 
-		//cudaGraphicsUnmapResources(1, &(vertexArray.vbo_res), 0);
 		cudaGraphicsUnmapResources(1, &(virtualVertexArray.vbo_res), 0);
 		//Rendering
 		vertexArray.SetActive();
@@ -169,7 +161,6 @@ public:
 			0, 0, 0, 1);
 		shader.SetActive();
 		shader.SetMatrixUniform("MVP",  RotX * projection * viewMat * M);
-		//shader.SetMatrixUniform("MVP", RotX*projection * viewMat * M);
 
 		//glm::vec4 a = homography*projection * viewMat * M * glm::vec4(0.0, 0.0, 0.0, 1.0);
 		//a /= a.a;
@@ -180,13 +171,8 @@ public:
 		glDrawArrays(GL_TRIANGLES, 0, model.position.size() / 3);
 		
 
-		//glClearColor(0, 0.0, 0, 0);
-		//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		
 
 		virtualVertexArray.SetActive();
-		//mvMatrix.change3Dpoint(objpoints, input_xyz, M, 4);
-		//shader.SetMatrixUniform("MVP", homography * RotX * projection * viewMat );
 		oshader.SetActive();
 
 		oshader.SetMatrixUniform("VP",RotX* projection * viewMat);

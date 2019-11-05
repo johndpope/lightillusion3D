@@ -11,7 +11,10 @@
 using namespace std;
 #define BLOCK 512
 
-#define K 0.3
+
+//‚Î‚Ë’è”
+#define K 1.2
+//Œ¸Š—¦
 #define lambda 0.99
 //‘¬“x‚Í‚±‚Á‚¿‚É‚¨‚±‚¤
 
@@ -26,46 +29,9 @@ float(*d_MV)[4];
 float *h_dbg;
 float *d_dbg;
 
-glm::mat4 d_M;
 
-__global__ void d_spring(unsigned int num_points, float(*realpoints)[3], float(*virtualpoints)[3], float(*vel)[3], float dt,float(*M)[4],float* dbg) {
-	unsigned int index = blockDim.x * blockIdx.x + threadIdx.x;
+__global__ void d_spring(unsigned int num_points, float(*realpoints)[3], float(*virtualpoints)[3], float(*vel)[3], float dt, float(*M)[4], float* dbg);
 
-	
-	if (index > num_points) {
-		return;
-	}
-
-	float p[3];
-	
-	p[0] = M[0][0] * realpoints[index][0] + M[0][1] * realpoints[index][1] + M[0][2] * realpoints[index][2] + M[0][3] * 1.0f;
-	p[1] = M[1][0] * realpoints[index][0] + M[1][1] * realpoints[index][1] + M[1][2] * realpoints[index][2] + M[1][3] * 1.0f;
-	p[2]= M[2][0] * realpoints[index][0] + M[2][1] * realpoints[index][1] + M[2][2] * realpoints[index][2] + M[2][3] * 1.0f;
-	float w = M[3][0] * realpoints[index][0] + M[3][1] * realpoints[index][1] + M[3][2] * realpoints[index][2] + M[3][3] * 1.0f;
-	
-	
-	//float x = M[0][1];
-
-	//x = virtualpoints[index][0] - x;
-	//vel[index][0] = x;
-	//
-	//vel[index][2] += -0.3 * dt * (virtualpoints[index][2] - realpoint.z);
-	
-	for (int i = 0; i < 3; i++) {
-		p[i] /= w;
-		vel[index][i] += -1.0f * 0.033f * (virtualpoints[index][i] - p[i]);
-		virtualpoints[index][i] += vel[index][i] * dt;
-		vel[index][i] *=0.99;
-
-	}
-	/*
-	//virtualpoints[index][2] *= -1.0f;
-	if (index == 0) {
-		dbg[0] = 2.0f;
-	}
-	*/
-	
-}
 
 void initField(unsigned int num_points,vector<float>& position) {
 
@@ -121,3 +87,33 @@ void launchVertexProcess(unsigned int NUM_POINTS,float (*virtualpoints)[3],float
 	//printf("finish\n");
 }
 
+__global__ void d_spring(unsigned int num_points, float(*realpoints)[3], float(*virtualpoints)[3], float(*vel)[3], float dt, float(*M)[4], float* dbg) {
+	unsigned int index = blockDim.x * blockIdx.x + threadIdx.x;
+
+
+	if (index > num_points) {
+		return;
+	}
+
+	float p[3];
+
+	p[0] = M[0][0] * realpoints[index][0] + M[0][1] * realpoints[index][1] + M[0][2] * realpoints[index][2] + M[0][3] * 1.0f;
+	p[1] = M[1][0] * realpoints[index][0] + M[1][1] * realpoints[index][1] + M[1][2] * realpoints[index][2] + M[1][3] * 1.0f;
+	p[2] = M[2][0] * realpoints[index][0] + M[2][1] * realpoints[index][1] + M[2][2] * realpoints[index][2] + M[2][3] * 1.0f;
+	float w = M[3][0] * realpoints[index][0] + M[3][1] * realpoints[index][1] + M[3][2] * realpoints[index][2] + M[3][3] * 1.0f;
+
+
+	for (int i = 0; i < 3; i++) {
+		//p[i] /= w;
+		vel[index][i] += -K * dt * (virtualpoints[index][i] - p[i]);
+		virtualpoints[index][i] += vel[index][i] * dt;
+		vel[index][i] *= lambda;
+
+	}
+	/*
+	if (index == 0) {
+		dbg[0] = 2.0f;
+	}
+	*/
+
+}
