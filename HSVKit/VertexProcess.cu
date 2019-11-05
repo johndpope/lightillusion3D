@@ -50,7 +50,6 @@ void initField(unsigned int num_points,vector<float>& position) {
 		for (int j = 0; j < 3; j++) {
 			h_v[i][j] = 0.0f;
 			h_realpoints[i][j] = position[i * 3 + j];
-			//h_realpoints[i][j] = 2.0f;
 		}
 	}
 

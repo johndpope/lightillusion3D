@@ -58,10 +58,7 @@ public:
 		shader.Load("Shader/simple.vert", "Shader/uvmap.frag");
 		oshader.Load("Shader/override.vert", "Shader/override.frag");
 
-		//shader.printProgram();
-		//oshader.printProgram();
-		//shader.SetTextureUniform("image", tex);
-
+	
 
 		glEnable(GL_DEPTH_TEST);
 		//glEnable(GL_CULL_FACE);
@@ -72,11 +69,8 @@ public:
 		//projection = glm::ortho(-view_fov * render_aspect, view_fov * render_aspect, -view_fov, view_fov, -50.0f, 50.0f);
 
 
-		cameraFrustumRH(mvMatrix.intrinsics_matrix, cv::Size(648, 474), projection, 0.1, 100.0);
-		//cameraFrustumRH(mvMatrix.intrinsics_matrix, cv::Size(render_size[0],render_size[1]), projection, 0.1, 100.0);
-		//cout << to_string(projection) << endl;
-		//projection = glm::perspective((float)glm::radians(31.68), render_aspect, 0.01f, 100.0f);
-		//cout << to_string(projection) << endl;
+		cameraFrustumRH(mvMatrix.intrinsics_matrix, cv::Size(render_size[0], render_size[1]), projection, 0.1, 100.0);
+	
 		changeHomography(H, homography);
 		//cout << to_string(homography) << endl;
 		//cout << mvMatrix.intrinsics_matrix << endl;
