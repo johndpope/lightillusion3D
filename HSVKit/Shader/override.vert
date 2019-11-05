@@ -1,7 +1,7 @@
 #version 330
 
+uniform mat4 VP;
 uniform mat4 MVP;
-uniform mat4 M;
 
 layout (location = 0) in vec3 VertexPosition;
 layout(location=1) in vec3 VertexNormal;
@@ -18,10 +18,10 @@ float rand(vec2 co){
 
 void main()
 {
-  Position =(MVP*vec4(VertexPosition,1.0f)).xyz;
+  Position =(VP*vec4(VertexPosition,1.0f)).xyz;
   TexCoord = VertexTexCoord;
-  Normal= (MVP*M*vec4(VertexNormal,0.0f)).xyz;
+  Normal= (MVP*vec4(VertexNormal,0.0f)).xyz;
 
 //gl_FrontColor=gl_Color;
-  gl_Position =MVP*vec4(VertexPosition, 1.0);
+  gl_Position =VP*vec4(VertexPosition, 1.0);
 }

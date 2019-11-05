@@ -146,7 +146,7 @@ public:
 
 	void render(float* input_xyz, cv::Mat* img = NULL, int texid = 0) {
 		//cout << "r" << endl;
-		glClearColor(0, 0.0, 0, 0);
+		glClearColor(0.2, 0.2, 0.2,0.0 );
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		//cudaGraphicsMapResources(1, &(vertexArray.vbo_res), 0);
@@ -176,7 +176,7 @@ public:
 		//cout << glm::to_string(a) << endl;
 		glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
 		glViewport(0, 0, render_size[0], render_size[1]);
-		//glDrawElements(GL_TRIANGLES, model.varray.size()/8, GL_UNSIGNED_INT, nullptr);
+		+
 		glDrawArrays(GL_TRIANGLES, 0, model.position.size() / 3);
 		
 
@@ -188,12 +188,9 @@ public:
 		//mvMatrix.change3Dpoint(objpoints, input_xyz, M, 4);
 		//shader.SetMatrixUniform("MVP", homography * RotX * projection * viewMat );
 		oshader.SetActive();
-		glm::mat4 RotZ = glm::mat4(1, 0, 0, 0,
-			0, 1, 0, 0,
-			0, 0, 1, 0,
-			0, 0, 0, -1);
-		oshader.SetMatrixUniform("MVP",RotX* projection * viewMat);
-		oshader.SetMatrixUniform("M",RotX* projection * viewMat*M);
+
+		oshader.SetMatrixUniform("VP",RotX* projection * viewMat);
+		oshader.SetMatrixUniform("MVP",RotX* projection * viewMat*M);
 		//oshader.SetMatrixUniform("MVP", RotX * projection * viewMat * M);
 		oshader.SetTextureUniform("renderedTexture", renderedTexture);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);

@@ -28,8 +28,11 @@ void main()
 
   vec4 bcolor=texelFetch(myTex,screenpos,0);
 
-	//FragColor = (vec4(color,1.0)-bcolor)/(bcolor+0.1)*0.4+0.1;
-	FragColor=vec4(color,1.0)-bcolor;
+
+
+	FragColor =(vec4(color,1.0)-bcolor)*0.4+0.2;
+	//FragColor=vec4(0.2f);
+	//FragColor=vec4(color,1.0)-bcolor;
 	//FragColor=vec4(color,1.0)+0.2f;
   
  
