@@ -177,7 +177,7 @@ public:
 		cudaGraphicsMapResources(1, &(virtualVertexArray.vbo_res), 0);
 		cudaGraphicsResourceGetMappedPointer((void**)&d_virtualpoints, NULL, virtualVertexArray.vbo_res);
 
-		launchVertexProcess(model.position.size() / 3, d_virtualpoints, 0.033f,c2p* M);
+		launchVertexProcess(model.position.size() / 3, d_virtualpoints, 0.045f,c2p* M);
 
 		cudaGraphicsUnmapResources(1, &(virtualVertexArray.vbo_res), 0);
 		//Rendering
