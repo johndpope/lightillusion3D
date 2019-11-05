@@ -74,6 +74,8 @@ cv::Mat img_ximea0_cam;
 
 cv::Mat H;
 
+extern void endProcess();
+
 void getHomography(cv::Mat img, float* h, bool read = false) {
 	cv::Mat img_calib;
 	cv::Mat img_bin;
@@ -706,6 +708,7 @@ inline void mainloop() {
 #pragma endregion
 #endif
 
+	endProcess();
 
 	info.save();
 }

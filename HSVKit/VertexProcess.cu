@@ -86,6 +86,18 @@ void launchVertexProcess(unsigned int NUM_POINTS,float (*virtualpoints)[3],float
 	//printf("finish\n");
 }
 
+void endProcess() {
+	cudaFree(d_v);
+	cudaFree(d_MV);
+	cudaFree(d_realpoints);
+	cudaFree(d_dbg);
+
+	free(h_v);
+	free(h_MV);
+	free(h_realpoints);
+	free(h_dbg);
+}
+
 __global__ void d_spring(unsigned int num_points, float(*realpoints)[3], float(*virtualpoints)[3], float(*vel)[3], float dt, float(*M)[4], float* dbg) {
 	unsigned int index = blockDim.x * blockIdx.x + threadIdx.x;
 
