@@ -32,7 +32,7 @@ void HSVMC1::connect(int setMode) {
 		printf_s("Please Restart program to apply CLP_IMAGEMODE \r\n");
 		ClCloseCamera(cameraHandle);
 	}
-	if (mode == 2) {
+	if (setMode == 2) {
 		result = ClSetCameraParam(cameraHandle, CLP_ANALOGGAIN, 30000);
 		if (result == FALSE)
 		{
@@ -41,7 +41,7 @@ void HSVMC1::connect(int setMode) {
 			return;
 		}
 	}
-	else if (mode == 7) {
+	else if (setMode == 7) {
 		result = ClSetCameraParam(cameraHandle, CLP_ANALOGGAIN, 50000);
 		if (result == FALSE)
 		{
@@ -53,7 +53,7 @@ void HSVMC1::connect(int setMode) {
 
 	/// カメラからの映像出力方式を設定
 	/// HSVSDK Host Appプログラミングガイド.pdf の53ページ参照
-	if (mode == 7) {
+	if (setMode == 7) {
 		result = ClSetCameraParam(cameraHandle, CLP_IMAGEOUTPUTMODE, CLOUTPUTMODE_4BITDU);
 		if (result == FALSE)
 		{

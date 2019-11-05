@@ -25,7 +25,7 @@
     <Filter Include="ソース ファイル\Shader">
       <UniqueIdentifier>{27e95dce-1080-4a05-9039-83e62d776a3e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="CUDA">
+    <Filter Include="ソース ファイル\CUDA">
       <UniqueIdentifier>{e607dfa2-b7a0-4487-8f14-06e174c994e4}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -162,10 +162,10 @@
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="cudaTest.cu">
-      <Filter>CUDA</Filter>
+      <Filter>ソース ファイル\CUDA</Filter>
     </CudaCompile>
     <CudaCompile Include="VertexProcess.cu">
-      <Filter>CUDA</Filter>
+      <Filter>ソース ファイル\CUDA</Filter>
     </CudaCompile>
   </ItemGroup>
 </Project>

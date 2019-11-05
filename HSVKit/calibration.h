@@ -306,7 +306,7 @@ public:
 
 		cv::Mat cam_noprojd,cam_onprojd;
 		vector < cv::Point2f> corners;
-		if (!cv::findChessboardCorners(cam_light, board_sz, corners)) {
+		if (!cv::findChessboardCorners(cam_light, board_sz, corners, cv::CALIB_CB_ADAPTIVE_THRESH + cv::CALIB_CB_NORMALIZE_IMAGE + cv::CALIB_CB_FILTER_QUADS + cv::CALIB_CB_FAST_CHECK)) {
 			printf("Failed to find chessboardcorners in LIGHT...\n");
 			return;
 		}
@@ -345,7 +345,7 @@ public:
 			cv::Mat tmp = (cv::Mat_<double>(3,1)<< corners[i].x, corners[i].y, 1.0f);
 			tmp = cinv * tmp;
 
-			cout << tmp << endl;
+			//cout << tmp << endl;
 
 			double t = (n.dot(tvec)) / (n.dot(tmp));
 			tmp = t * tmp;
@@ -397,7 +397,7 @@ public:
 
 			
 			vector < cv::Point2f> corners;
-			if (!cv::findChessboardCorners(cam_light, board_sz, corners)) {
+			if (!cv::findChessboardCorners(cam_light, board_sz, corners, cv::CALIB_CB_ADAPTIVE_THRESH + cv::CALIB_CB_NORMALIZE_IMAGE + cv::CALIB_CB_FILTER_QUADS + cv::CALIB_CB_FAST_CHECK)) {
 				printf("Failed to find chessboardcorners in LIGHT...\n");
 				continue;
 			}
@@ -493,7 +493,7 @@ public:
 	プロジェクターとライトのオンオフに注意！
 	board_sizeはチェスボードの間隔をメートル単位で指定
 	*/
-	void calibrate_projector(int board_w = 0, int board_h = 0,double board_size=0,bool read=false) {
+	void calibrate_projector(int board_w = 0, int board_h = 0,double board_size=0,bool read=false,int piccount=0) {
 		board_n = board_h * board_w;
 		board_sz = cv::Size(board_w, board_h);
 		for (int j = 0; j < board_h; j++) {
@@ -506,7 +506,7 @@ public:
 			calibrate_projector_read();
 			return;
 		}
-
+		pic_count = piccount;
 		fp = fopen("Calibration/chessSize.txt", "w");
 
 		
@@ -859,7 +859,7 @@ public:
 			//Undistort(proj_chess, proj_chess);
 
 			vector <cv::Point2f> corners;
-			if (!cv::findChessboardCorners(cam_light, board_sz, corners)) {
+			if (!cv::findChessboardCorners(cam_light, board_sz, corners, cv::CALIB_CB_ADAPTIVE_THRESH + cv::CALIB_CB_NORMALIZE_IMAGE + cv::CALIB_CB_FILTER_QUADS + cv::CALIB_CB_FAST_CHECK)) {
 				printf("Failed to find chessboardcorners in LIGHT...\n");
 				continue;
 			}

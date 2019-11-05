@@ -1,8 +1,8 @@
 #pragma once
 
 #pragma region flags
-//#define CAMERA
-//#define PROJECTOR
+#define CAMERA
+#define PROJECTOR
 #pragma endregion
 
 #ifdef _DEBUG
