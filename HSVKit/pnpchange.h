@@ -18,6 +18,7 @@ public:
 		fs.release();
 		tvec = (cv::Mat_<double>(3, 1) << 0, 0, 1);
 		rvec = (cv::Mat_<double>(3, 1) << 0, 3.14, 0);
+		//cout << intrinsics_matrix << endl;
 	}
 
 	void change3Dpoint(float* objPoints, float* imgPoints, glm::mat4 &dst, int pointnum) {
@@ -45,6 +46,7 @@ public:
 		*/
 		//cout << endl;
 		//cv::Mat distortion = (cv::Mat_<double>(4, 1) << 0, 0, 0, 0);
+
 		cv::solvePnP(objp, imgp, intrinsics_matrix, distortion_coeffs, rvec, tvec, true);
 		//cout << tvec << endl;
 		//rvec=(cv::Mat_<double>(3, 1) << 0, 0, 0);
@@ -95,7 +97,7 @@ public:
 
 	}
 
-	void fromCV2GLM(const cv::Mat& cvmat, glm::mat4& glmmat) {
+	static void fromCV2GLM(const cv::Mat& cvmat, glm::mat4& glmmat) {
 
 		for (int i = 0; i < 4; i++) {
 			for (int j = 0; j < 4; j++) {

@@ -469,9 +469,9 @@ inline void mainloop() {
 
 		//cv::Mat KI = (cv::Mat_<double>(3, 3) << proj_height, 0, proj_height / 2.0, 0, proj_width, proj_width / 2.0, 0, 0, 1);
 		//cv::Mat K = (cv::Mat_<double>(3, 3) << cam_height, 0, cam_height / 2.0, 0, cam_width, cam_width / 2.0, 0, 0, 1);
-		//GLFWkit glfwkit("glfwkit", proj_width, proj_height,KI.inv()*H*K,"horse.obj");
+		GLFWkit glfwkit("glfwkit", proj_width, proj_height,KI.inv()*H*K,"horse.obj");
 
-		GLFWkit glfwkit("glfwkit",cam_width, cam_height,KI.inv()*H*K,"horse.obj");
+		///GLFWkit glfwkit("glfwkit",cam_width, cam_height,KI.inv()*H*K,"horse.obj");
 		glfwkit.setup();
 
 
@@ -502,24 +502,26 @@ inline void mainloop() {
 			getCorners(img_cam, img_display_cam, corner_xyz_cam, corner_detected, center, pre_center, ppre_center);
 	
 
-			calib.UndistortPerPoint(corner_xyz_cam, corner_xyz_undistorted, corner_detected);
+			//calib.UndistortPerPoint(corner_xyz_cam, corner_xyz_undistorted, corner_detected);
 
-			cvtHomography(corner_xyz_undistorted, corner_xyz_proj, homography);
+			//cvtHomography(corner_xyz_undistorted, corner_xyz_proj, homography);
+			/*
 			for (int i = 0; i < 4; i++) {
 				corner_xyz_cam[3 * i + 0] += 100.0 * sin((double)count/100.0);
 			}
+			*/
 			//glfwkit.render(corner_xyz_cam, &img_render,0);
 			//cv::imshow("2", img_render);
 			//cv::waitKey(1);
 			//diffImage(img_render, img_render2, dst,50);
-			glfwkit.render(corner_xyz_cam, &img_proj_cam,0);
+			//glfwkit.render(corner_xyz_cam, &img_proj_cam,0);
 			//cv::flip(img_render, img_render, 0);
 			//cv::warpPerspective(img_proj_cam, img_render, H, img_render.size());
 
 
 			//High-speed Rendering without GLFW GUI
 
-			//glkit.render(corner_xyz_proj, &img_render, texid);
+			glfwkit.render(corner_xyz_cam, &img_render, texid);
 			//Display-rate Rendering with GLFW GUI
 			//glfwkit.update(corner_gl, &img_render);
 			if (img_render.data != NULL) {
@@ -665,12 +667,12 @@ inline void mainloop() {
 		//img_render.copyTo(img_display_proj);
 		img_render.copyTo(img_display_proj);
 		//cv::cvtColor(img_render, img_display_proj, cv::COLOR_GRAY2RGB);
-		img_proj_cam.copyTo(img_display_proj_cam);
+		//img_proj_cam.copyTo(img_display_proj_cam);
 		//cv::imshow("img_display_cam", img_display_cam);
 		//cv::circle(img_display_proj, cv::Point(486, 439), 10, cv::Scalar(200, 0, 0));
 		cv::imshow("img_display_cam", img_display_cam);
 		cv::imshow("img_display_proj", img_display_proj);
-		cv::imshow("img_display_proj_cam", img_display_proj_cam);
+		//cv::imshow("img_display_proj_cam", img_display_proj_cam);
 
 		
 		//cout << velocityAccel<<endl;

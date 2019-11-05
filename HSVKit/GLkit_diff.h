@@ -18,11 +18,41 @@ private:
 	float(*d_realpoints)[3];
 	float(*d_virtualpoints)[3];
 
+	cv::Mat proj_intrinsics;
+
+	
+
+	glm::mat4 c2p;
 public:
 
 	GLkitD(int window_w, int window_h, cv::Mat H) :
 		GLkit(window_w, window_h, H) {
+		cv::Mat R, t;
+		cv::FileStorage fs("extrinc_param.xml", cv::FileStorage::READ);
+		fs["R"] >> R;
+		fs["t"] >> t;
 
+		fs.release();
+
+		cv::FileStorage fss("intrinsics_proj.xml", cv::FileStorage::READ);
+		fss["camera_matrix"] >> proj_intrinsics;
+
+		fss.release();
+
+		cv::Mat T = cv::Mat::eye(4, 4, R.type()); // T is 4x4
+		//cv::Mat Tgl(4, 4, R.type()); // T is 4x4
+		cv::Mat rvec;
+		cv::Rodrigues(R, rvec);
+		rvec.at<double>(1) *= -1.0;
+		rvec.at<double>(0) *= -1.0;
+		t.at<double>(1) *= -1.0;
+		t.at<double>(0) *= -1.0;
+		cv::Rodrigues(rvec, R);
+		T(cv::Range(0, 3), cv::Range(0, 3)) = R * 1; // copies R into T
+		T(cv::Range(0, 3), cv::Range(3, 4)) = t * 1;
+		MVmatrix::fromCV2GLM(T, c2p);
+
+		//c2p=glm::inverse(c2p);
 	}
 
 	void loadObj(char* fileName = NULL) {
@@ -36,6 +66,11 @@ public:
 		virtualVertexArray.load(model.position, model.normal, model.texcoord, static_cast<unsigned>(model.position.size()) / 3);
 		//vertexArray.SetActive();
 		initField(model.position.size() / 3,model.position);
+
+		
+
+
+
 	}
 
 	void setup() {
@@ -68,8 +103,8 @@ public:
 		//glEnable(GL_TEXTURE_2D);
 		//projection = glm::ortho(-view_fov * render_aspect, view_fov * render_aspect, -view_fov, view_fov, -50.0f, 50.0f);
 
-
-		cameraFrustumRH(mvMatrix.intrinsics_matrix, cv::Size(render_size[0], render_size[1]), projection, 0.1, 100.0);
+		//cout << mvMatrix.intrinsics_matrix << endl;
+		cameraFrustumRH(proj_intrinsics, cv::Size(render_size[0], render_size[1]), projection, 0.1, 100.0);
 	
 		changeHomography(H, homography);
 		//cout << to_string(homography) << endl;
@@ -137,12 +172,12 @@ public:
 		//cout << "r" << endl;
 		glClearColor(0.2, 0.2, 0.2,0.0 );
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+		//cout << "a" << endl;
 
 		cudaGraphicsMapResources(1, &(virtualVertexArray.vbo_res), 0);
 		cudaGraphicsResourceGetMappedPointer((void**)&d_virtualpoints, NULL, virtualVertexArray.vbo_res);
 
-		launchVertexProcess(model.position.size() / 3, d_virtualpoints, 0.033f, M);
+		launchVertexProcess(model.position.size() / 3, d_virtualpoints, 0.033f,c2p* M);
 
 		cudaGraphicsUnmapResources(1, &(virtualVertexArray.vbo_res), 0);
 		//Rendering
@@ -154,7 +189,7 @@ public:
 			0, 0, 1, 0,
 			0, 0, 0, 1);
 		shader.SetActive();
-		shader.SetMatrixUniform("MVP",  RotX * projection * viewMat * M);
+		shader.SetMatrixUniform("MVP",  RotX * projection * viewMat * c2p*M);
 
 		//glm::vec4 a = homography*projection * viewMat * M * glm::vec4(0.0, 0.0, 0.0, 1.0);
 		//a /= a.a;
@@ -170,12 +205,12 @@ public:
 		oshader.SetActive();
 
 		oshader.SetMatrixUniform("VP",RotX* projection * viewMat);
-		oshader.SetMatrixUniform("MVP",RotX* projection * viewMat*M);
+		oshader.SetMatrixUniform("MVP",RotX* projection * viewMat*c2p*M);
 		//oshader.SetMatrixUniform("MVP", RotX * projection * viewMat * M);
 		oshader.SetTextureUniform("renderedTexture", renderedTexture);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glDrawArrays(GL_TRIANGLES, 0, model.position.size() / 3);
-
+		//cout <<to_string( M) << endl;
 	
 		if (img!= NULL && img->cols == render_size[0] && img->rows == render_size[1]) {
 			//glReadPixels(0, 0, render_size[0], render_size[1], GL_RGB, GL_UNSIGNED_BYTE, img->data);
