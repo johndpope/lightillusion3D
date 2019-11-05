@@ -176,7 +176,7 @@ public:
 		//cout << glm::to_string(a) << endl;
 		glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
 		glViewport(0, 0, render_size[0], render_size[1]);
-		+
+		
 		glDrawArrays(GL_TRIANGLES, 0, model.position.size() / 3);
 		
 
